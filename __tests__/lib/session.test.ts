@@ -1,4 +1,8 @@
 // __tests__/lib/session.test.ts
+jest.mock('iron-session', () => ({ getIronSession: jest.fn() }))
+jest.mock('next/headers', () => ({ cookies: jest.fn() }))
+jest.mock('next/server', () => ({ NextResponse: { json: jest.fn() } }))
+
 import { getSessionConfig, SESSION_COOKIE_NAME } from '@/lib/session'
 
 describe('session config', () => {

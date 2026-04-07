@@ -24,7 +24,6 @@ export function getSessionConfig(): SessionOptions {
   }
 }
 
-// Add to bottom of src/lib/session.ts
 import { getIronSession } from 'iron-session'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
