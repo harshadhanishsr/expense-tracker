@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
-import { requireAuth } from '@/lib/session'
 
 export async function GET(req: NextRequest) {
-  const auth = await requireAuth()
-  if (auth instanceof NextResponse) return auth
-
   const { searchParams } = new URL(req.url)
   const month = searchParams.get('month')
   const type = searchParams.get('type')
@@ -36,9 +32,6 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await requireAuth()
-  if (auth instanceof NextResponse) return auth
-
   const body = await req.json().catch(() => ({}))
   const { type, amount, category, date, description, is_recurring, recurrence_interval } = body
 

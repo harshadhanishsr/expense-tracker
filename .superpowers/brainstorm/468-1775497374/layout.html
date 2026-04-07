@@ -1,0 +1,146 @@
+<h2>Expense Tracker — App Layout</h2>
+<p class="subtitle">Here's how the four screens will look and flow together</p>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px;">
+
+  <!-- PIN Screen -->
+  <div style="border: 2px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+    <div style="background: #1e293b; color: white; padding: 10px 16px; font-size: 13px; font-weight: 600; letter-spacing: 0.05em;">SCREEN 1 — PIN LOCK</div>
+    <div style="padding: 20px; background: #0f172a; text-align: center; min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
+      <div style="color: #94a3b8; font-size: 13px; letter-spacing: 0.1em;">EXPENSE TRACKER</div>
+      <div style="color: white; font-size: 20px; font-weight: 700;">Enter PIN</div>
+      <div style="display: flex; gap: 12px; margin: 8px 0;">
+        <div style="width: 14px; height: 14px; border-radius: 50%; background: #3b82f6;"></div>
+        <div style="width: 14px; height: 14px; border-radius: 50%; background: #3b82f6;"></div>
+        <div style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid #475569;"></div>
+        <div style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid #475569;"></div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 48px); gap: 8px;">
+        <div style="background: #1e293b; color: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 16px;">1</div>
+        <div style="background: #1e293b; color: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 16px;">2</div>
+        <div style="background: #1e293b; color: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 16px;">3</div>
+        <div style="background: #1e293b; color: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 16px;">4</div>
+        <div style="background: #1e293b; color: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 16px;">5</div>
+        <div style="background: #1e293b; color: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 16px;">6</div>
+        <div style="background: #1e293b; color: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 16px;">7</div>
+        <div style="background: #1e293b; color: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 16px;">8</div>
+        <div style="background: #1e293b; color: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 16px;">9</div>
+        <div></div>
+        <div style="background: #1e293b; color: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 16px;">0</div>
+        <div style="background: #ef4444; color: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 12px;">⌫</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div style="border: 2px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+    <div style="background: #1e293b; color: white; padding: 10px 16px; font-size: 13px; font-weight: 600; letter-spacing: 0.05em;">SCREEN 2 — DASHBOARD</div>
+    <div style="padding: 16px; background: #f8fafc; min-height: 200px;">
+      <div style="font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 10px;">April 2026</div>
+      <!-- Summary cards -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+        <div style="background: white; border-radius: 8px; padding: 10px; border-left: 3px solid #22c55e;">
+          <div style="font-size: 10px; color: #64748b;">INCOME</div>
+          <div style="font-size: 14px; font-weight: 700; color: #22c55e;">₹45,000</div>
+        </div>
+        <div style="background: white; border-radius: 8px; padding: 10px; border-left: 3px solid #ef4444;">
+          <div style="font-size: 10px; color: #64748b;">EXPENSES</div>
+          <div style="font-size: 14px; font-weight: 700; color: #ef4444;">₹18,200</div>
+        </div>
+        <div style="background: white; border-radius: 8px; padding: 10px; border-left: 3px solid #3b82f6;">
+          <div style="font-size: 10px; color: #64748b;">BALANCE</div>
+          <div style="font-size: 14px; font-weight: 700; color: #3b82f6;">₹26,800</div>
+        </div>
+      </div>
+      <!-- Category bars -->
+      <div style="background: white; border-radius: 8px; padding: 10px; margin-bottom: 12px;">
+        <div style="font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 8px;">TOP SPENDING</div>
+        <div style="margin-bottom: 6px;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: #334155; margin-bottom: 2px;"><span>🍔 Food</span><span>₹6,400</span></div>
+          <div style="background: #fee2e2; border-radius: 4px; height: 6px;"><div style="background: #ef4444; width: 70%; height: 100%; border-radius: 4px;"></div></div>
+        </div>
+        <div style="margin-bottom: 6px;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: #334155; margin-bottom: 2px;"><span>🏠 Rent</span><span>₹8,000</span></div>
+          <div style="background: #fee2e2; border-radius: 4px; height: 6px;"><div style="background: #ef4444; width: 88%; height: 100%; border-radius: 4px;"></div></div>
+        </div>
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: #334155; margin-bottom: 2px;"><span>🚗 Transport</span><span>₹2,100</span></div>
+          <div style="background: #fee2e2; border-radius: 4px; height: 6px;"><div style="background: #ef4444; width: 30%; height: 100%; border-radius: 4px;"></div></div>
+        </div>
+      </div>
+      <!-- Recent -->
+      <div style="background: white; border-radius: 8px; padding: 10px;">
+        <div style="font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 8px;">RECENT</div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 4px 0; border-bottom: 1px solid #f1f5f9;"><span>🍔 Lunch</span><span style="color: #ef4444;">-₹320</span></div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 4px 0;"><span>💰 Salary</span><span style="color: #22c55e;">+₹45,000</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Transaction -->
+  <div style="border: 2px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+    <div style="background: #1e293b; color: white; padding: 10px 16px; font-size: 13px; font-weight: 600; letter-spacing: 0.05em;">SCREEN 3 — ADD TRANSACTION</div>
+    <div style="padding: 16px; background: #f8fafc; min-height: 200px;">
+      <!-- Toggle -->
+      <div style="display: flex; background: #e2e8f0; border-radius: 8px; padding: 3px; margin-bottom: 16px;">
+        <div style="flex: 1; background: #ef4444; color: white; border-radius: 6px; padding: 6px; text-align: center; font-size: 12px; font-weight: 600;">Expense</div>
+        <div style="flex: 1; color: #64748b; border-radius: 6px; padding: 6px; text-align: center; font-size: 12px;">Income</div>
+      </div>
+      <!-- Amount -->
+      <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 10px; text-align: center;">
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 4px;">AMOUNT (₹)</div>
+        <div style="font-size: 28px; font-weight: 700; color: #1e293b;">0.00</div>
+      </div>
+      <!-- Category -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px;">
+        <div style="background: #dbeafe; border-radius: 6px; padding: 6px; text-align: center; font-size: 10px;">🍔<br>Food</div>
+        <div style="background: #e2e8f0; border-radius: 6px; padding: 6px; text-align: center; font-size: 10px;">🚗<br>Transport</div>
+        <div style="background: #e2e8f0; border-radius: 6px; padding: 6px; text-align: center; font-size: 10px;">🏠<br>Rent</div>
+        <div style="background: #e2e8f0; border-radius: 6px; padding: 6px; text-align: center; font-size: 10px;">⚡<br>Utilities</div>
+      </div>
+      <!-- Note + Date -->
+      <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 12px; color: #94a3b8;">Note (optional)...</div>
+      <div style="background: #22c55e; color: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 13px; font-weight: 600;">Add Transaction</div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div style="border: 2px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+    <div style="background: #1e293b; color: white; padding: 10px 16px; font-size: 13px; font-weight: 600; letter-spacing: 0.05em;">SCREEN 4 — HISTORY</div>
+    <div style="padding: 16px; background: #f8fafc; min-height: 200px;">
+      <!-- Search + Filter -->
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <div style="flex: 1; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; font-size: 11px; color: #94a3b8;">🔍 Search...</div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; font-size: 11px; color: #64748b;">Apr ▾</div>
+      </div>
+      <!-- Transaction list -->
+      <div style="background: white; border-radius: 8px; overflow: hidden;">
+        <div style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+          <div><div style="font-size: 12px; font-weight: 600;">Lunch</div><div style="font-size: 10px; color: #94a3b8;">🍔 Food · Apr 5</div></div>
+          <span style="color: #ef4444; font-size: 13px; font-weight: 600;">-₹320</span>
+        </div>
+        <div style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+          <div><div style="font-size: 12px; font-weight: 600;">Salary</div><div style="font-size: 10px; color: #94a3b8;">💰 Salary · Apr 1</div></div>
+          <span style="color: #22c55e; font-size: 13px; font-weight: 600;">+₹45,000</span>
+        </div>
+        <div style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+          <div><div style="font-size: 12px; font-weight: 600;">Electricity Bill</div><div style="font-size: 10px; color: #94a3b8;">⚡ Utilities · Apr 3</div></div>
+          <span style="color: #ef4444; font-size: 13px; font-weight: 600;">-₹1,200</span>
+        </div>
+        <div style="padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
+          <div><div style="font-size: 12px; font-weight: 600;">Auto Rickshaw</div><div style="font-size: 10px; color: #94a3b8;">🚗 Transport · Apr 4</div></div>
+          <span style="color: #ef4444; font-size: 13px; font-weight: 600;">-₹85</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom nav -->
+<div style="margin-top: 24px; background: #1e293b; border-radius: 12px; padding: 12px 24px; display: flex; justify-content: space-around; align-items: center;">
+  <div style="text-align: center; color: #3b82f6; font-size: 11px;">🏠<br>Dashboard</div>
+  <div style="background: #3b82f6; color: white; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-top: -20px; box-shadow: 0 4px 12px rgba(59,130,246,0.5);">+</div>
+  <div style="text-align: center; color: #64748b; font-size: 11px;">📋<br>History</div>
+</div>
+<p class="subtitle" style="text-align:center; margin-top: 12px;">Bottom nav: Dashboard · Add (center FAB) · History</p>
