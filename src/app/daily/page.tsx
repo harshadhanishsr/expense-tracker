@@ -1,4 +1,6 @@
 // src/app/daily/page.tsx
+export const dynamic = 'force-dynamic'
+
 import { getSupabaseAdmin } from '@/lib/supabase'
 import DayGroup from '@/components/DayGroup'
 import BottomNav from '@/components/BottomNav'

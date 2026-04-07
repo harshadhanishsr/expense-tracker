@@ -1,4 +1,6 @@
 // src/app/insights/page.tsx
+export const dynamic = 'force-dynamic'
+
 import { getSupabaseAdmin } from '@/lib/supabase'
 import BarChart from '@/components/BarChart'
 import InsightsPeriodToggle from '@/components/InsightsPeriodToggle'

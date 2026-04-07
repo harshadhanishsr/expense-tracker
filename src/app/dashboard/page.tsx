@@ -1,4 +1,6 @@
 // src/app/dashboard/page.tsx
+export const dynamic = 'force-dynamic'
+
 import { getSupabaseAdmin } from '@/lib/supabase'
 import SummaryCards from '@/components/SummaryCards'
 import CategoryBars from '@/components/CategoryBars'
