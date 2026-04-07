@@ -23,3 +23,16 @@ export function getSessionConfig(): SessionOptions {
     },
   }
 }
+
+// Add to bottom of src/lib/session.ts
+import { getIronSession } from 'iron-session'
+import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+
+export async function requireAuth(): Promise<{ ok: true } | NextResponse> {
+  const session = await getIronSession<SessionData>(await cookies(), getSessionConfig())
+  if (!session.authenticated) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  return { ok: true }
+}
