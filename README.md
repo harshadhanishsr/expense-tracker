@@ -1,19 +1,21 @@
 # Expense Tracker
 
-A personal income and expense tracker you can self-host for free. Protected by a 4-digit PIN, accessible from any device via a URL.
+A personal income and expense tracker you can self-host for free. No accounts, no login — open the URL and start tracking.
 
-**Tech stack:** Next.js 14 · TypeScript · Tailwind CSS · Supabase (PostgreSQL) · iron-session · Vercel
+**Tech stack:** Next.js 16 · TypeScript · Tailwind CSS v4 · Supabase (PostgreSQL) · Vercel
 
 ---
 
 ## Features
 
-- PIN-protected — no accounts, no passwords
-- Add income and expenses with categories
-- Dashboard with monthly summary, balance, and top spending breakdown
-- Full transaction history with search, filter by type, and delete
-- Works on mobile and desktop
-- Data stored in your own Supabase database
+- **Dashboard** — monthly balance, income vs spent, today's spend, top categories
+- **Daily view** — spending broken down by category for each day
+- **Insights** — week / month / year analytics with bar charts and comparisons
+- **Smart autocomplete** — learns from past entries (description, category, amount)
+- **Quick repeat** — hover any recent transaction and tap ↺ to re-add it instantly
+- **Recurring transactions** — mark any transaction as weekly or monthly
+- **Full history** — search, filter by type and month, swipe to delete
+- Mobile-first, dark theme, works on any device
 
 ---
 
@@ -30,17 +32,20 @@ npm install
 ### 2. Create a Supabase project
 
 1. Go to [supabase.com](https://supabase.com) and create a free account
-2. Click **New Project** and give it a name
+2. Click **New Project**
 3. Once created, go to **Settings → API** and copy:
    - Project URL
-   - `anon` / public key
-   - `service_role` key
+   - Anon / publishable key
+   - Service role / secret key
 
-### 3. Run the database schema
+### 3. Run the database migrations
 
-1. In your Supabase dashboard, go to **SQL Editor → New query**
-2. Paste the contents of `supabase/migrations/001_init.sql`
-3. Click **Run** — you should see "Success. No rows returned."
+In your Supabase dashboard → **SQL Editor → New query**, run each file in order:
+
+1. `supabase/migrations/001_init.sql` — creates the transactions table
+2. `supabase/migrations/002_recurring.sql` — adds recurring transaction support
+
+Click **Run** after each — you should see "Success. No rows returned."
 
 ### 4. Set up environment variables
 
@@ -48,7 +53,7 @@ npm install
 cp .env.local.example .env.local
 ```
 
-Fill in `.env.local` with your values:
+Fill in `.env.local`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
@@ -68,7 +73,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — set your PIN and start tracking.
+Open [http://localhost:3000](http://localhost:3000) — redirects straight to the dashboard.
 
 ---
 
@@ -76,7 +81,7 @@ Open [http://localhost:3000](http://localhost:3000) — set your PIN and start t
 
 1. Push your code to GitHub
 2. Go to [vercel.com](https://vercel.com) → New Project → import your repo
-3. Add the same 4 environment variables from `.env.local` in the Vercel dashboard
+3. Add the 4 environment variables in the Vercel dashboard under **Settings → Environment Variables**
 4. Click **Deploy**
 
 Your app will be live at a `*.vercel.app` URL.
@@ -88,27 +93,41 @@ Your app will be live at a `*.vercel.app` URL.
 ```
 src/
 ├── app/
-│   ├── page.tsx              # PIN lock / first-time setup
-│   ├── dashboard/page.tsx    # Dashboard
-│   ├── add/page.tsx          # Add transaction
-│   ├── history/page.tsx      # Transaction history
-│   └── api/
-│       ├── auth/route.ts         # POST (verify PIN), DELETE (logout)
-│       ├── auth/setup/route.ts   # POST (first-time PIN setup)
-│       └── transactions/
-│           ├── route.ts          # GET (list), POST (create)
-│           └── [id]/route.ts     # DELETE (remove)
+│   ├── page.tsx                  # Redirects to /dashboard
+│   ├── dashboard/page.tsx        # Main dashboard
+│   ├── add/page.tsx              # Add transaction
+│   ├── history/page.tsx          # Transaction history
+│   ├── daily/page.tsx            # Daily category breakdown
+│   ├── insights/page.tsx         # Analytics & charts
+│   └── api/transactions/
+│       ├── route.ts              # GET (list), POST (create)
+│       ├── [id]/route.ts         # DELETE
+│       ├── suggestions/route.ts  # GET autocomplete suggestions
+│       └── recurring/route.ts    # GET recurring transactions
 ├── components/
-│   ├── PinInput.tsx
 │   ├── BottomNav.tsx
 │   ├── SummaryCards.tsx
 │   ├── CategoryBars.tsx
 │   ├── TransactionList.tsx
-│   └── TransactionForm.tsx
+│   ├── TransactionForm.tsx
+│   ├── DayGroup.tsx
+│   ├── CategoryDayGrid.tsx
+│   ├── BarChart.tsx
+│   ├── InsightsPeriodToggle.tsx
+│   ├── InsightCategoryCard.tsx
+│   ├── RecurringSection.tsx
+│   └── SuggestionDropdown.tsx
+├── hooks/
+│   └── useDescriptionSuggestions.ts
 └── lib/
-    ├── supabase.ts     # Supabase server client
-    ├── session.ts      # iron-session config
-    └── categories.ts   # Category definitions
+    ├── supabase.ts       # Supabase server client
+    ├── session.ts        # Session config
+    ├── categories.ts     # Category definitions + color map
+    └── types.ts          # Shared TypeScript types
+supabase/
+├── migrations/
+│   ├── 001_init.sql
+│   └── 002_recurring.sql
 ```
 
 ---
@@ -118,8 +137,6 @@ src/
 ```bash
 npx jest --no-coverage
 ```
-
-19 tests covering auth API, transactions API, session config, and PinInput component.
 
 ---
 
