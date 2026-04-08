@@ -1,7 +1,7 @@
 // src/components/TransactionForm.tsx
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { getCategoriesForType, CATEGORY_COLORS, type TransactionType } from '@/lib/categories'
 import { useDescriptionSuggestions } from '@/hooks/useDescriptionSuggestions'
 import SuggestionDropdown from '@/components/SuggestionDropdown'
@@ -9,10 +9,17 @@ import type { Suggestion } from '@/lib/types'
 
 export default function TransactionForm() {
   const router = useRouter()
-  const [type, setType] = useState<TransactionType>('expense')
-  const [amount, setAmount] = useState('')
-  const [category, setCategory] = useState('')
-  const [description, setDescription] = useState('')
+  const searchParams = useSearchParams()
+  const prefillType = (searchParams.get('type') ?? 'expense') as TransactionType
+  const prefillAmount = searchParams.get('amount') ?? ''
+  const prefillCategory = searchParams.get('category') ?? ''
+  const prefillDescription = decodeURIComponent(searchParams.get('description') ?? '')
+  const isRepeat = searchParams.has('type')
+
+  const [type, setType] = useState<TransactionType>(prefillType)
+  const [amount, setAmount] = useState(prefillAmount)
+  const [category, setCategory] = useState(prefillCategory)
+  const [description, setDescription] = useState(prefillDescription)
   const [date, setDate] = useState(new Date().toISOString().slice(0,10))
   const [isRecurring, setIsRecurring] = useState(false)
   const [recurrenceInterval, setRecurrenceInterval] = useState<'weekly'|'monthly'>('monthly')
@@ -55,6 +62,14 @@ export default function TransactionForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+
+      {/* Repeat banner */}
+      {isRepeat && (
+        <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-2xl px-4 py-3">
+          <span className="text-blue-400 text-lg">↺</span>
+          <p className="text-blue-300 text-sm font-medium">Repeating a past transaction — edit if needed</p>
+        </div>
+      )}
 
       {/* Type toggle */}
       <div className="flex bg-slate-900 border border-slate-800 rounded-2xl p-1">

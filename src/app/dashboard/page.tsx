@@ -133,7 +133,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
               See all →
             </Link>
           </div>
-          <TransactionList transactions={transactions} limit={5} />
+          <TransactionList transactions={transactions} limit={5} showRepeat />
         </div>
 
       </div>

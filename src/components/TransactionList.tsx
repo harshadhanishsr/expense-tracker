@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { getCategoryById, CATEGORY_COLORS } from '@/lib/categories'
 
 interface Transaction { id: string; type: 'income'|'expense'; amount: number; category: string; description?: string | null; date: string }
@@ -17,10 +18,11 @@ function formatDate(d: string) {
   return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
 }
 
-export default function TransactionList({ transactions, onDelete, limit }: {
+export default function TransactionList({ transactions, onDelete, limit, showRepeat }: {
   transactions: Transaction[]
   onDelete?: (id: string) => void
   limit?: number
+  showRepeat?: boolean
 }) {
   const rows = limit ? transactions.slice(0, limit) : transactions
   if (!rows.length) return (
@@ -51,10 +53,16 @@ export default function TransactionList({ transactions, onDelete, limit }: {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 ml-3 flex-shrink-0">
+            <div className="flex items-center gap-2 ml-3 flex-shrink-0">
               <span className={`text-sm font-bold tabular-nums ${t.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>
                 {t.type === 'income' ? '+' : '-'}{fmt(t.amount)}
               </span>
+              {showRepeat && (
+                <Link
+                  href={`/add?type=${t.type}&amount=${t.amount}&category=${t.category}&description=${encodeURIComponent(t.description || '')}`}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-slate-600 hover:text-blue-400 hover:bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-all duration-200 text-sm"
+                  title="Repeat this transaction">↺</Link>
+              )}
               {onDelete && (
                 <button
                   onClick={() => onDelete(t.id)}
