@@ -1,4 +1,6 @@
 // src/app/add/page.tsx
+export const dynamic = 'force-dynamic'
+
 import TransactionForm from '@/components/TransactionForm'
 import BottomNav from '@/components/BottomNav'
 import Link from 'next/link'
