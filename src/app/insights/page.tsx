@@ -61,18 +61,13 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const bounds = getPeriodBounds(period)
 
   const sixMonthsAgo = new Date(); sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
-  const startDate = sixMonthsAgo.toISOString().slice(0, 10)
-  const endDate = new Date().toISOString().slice(0, 10)
-
   const { data } = await getSupabaseAdmin()
-    .from('transactions')
-    .select('*')
-    .gte('date', startDate)
-    .lte('date', endDate)
+    .from('transactions').select('*')
+    .gte('date', sixMonthsAgo.toISOString().slice(0, 10))
+    .lte('date', new Date().toISOString().slice(0, 10))
     .order('date', { ascending: false })
 
   const allTxs = (data ?? []) as Transaction[]
-
   const currentTxs = allTxs.filter(t => t.date >= bounds.current.start && t.date <= bounds.current.end)
   const previousTxs = allTxs.filter(t => t.date >= bounds.previous.start && t.date <= bounds.previous.end)
 
@@ -82,10 +77,9 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const monthlyBars = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(); d.setMonth(d.getMonth() - (5 - i))
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-    const monthTxs = allTxs.filter(t => t.date.startsWith(key))
     return {
       label: d.toLocaleDateString('en-IN', { month: 'short' }),
-      current: totalExpense(monthTxs),
+      current: totalExpense(allTxs.filter(t => t.date.startsWith(key))),
       previous: 0,
     }
   })
@@ -97,33 +91,38 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
 
   const maxMonthly = Math.max(...monthlyBars.map(b => b.current), 1)
   const maxPeriod = Math.max(currentTotal, previousTotal, 1)
+  const pctChange = previousTotal > 0 ? Math.round(((currentTotal - previousTotal) / previousTotal) * 100) : null
 
   function fmt(n: number) { return '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 }) }
 
-  const pctChange = previousTotal > 0
-    ? Math.round(((currentTotal - previousTotal) / previousTotal) * 100)
-    : null
-
   return (
-    <main className="min-h-screen bg-slate-900 pb-24">
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 px-4 pt-12 pb-6 rounded-b-3xl shadow-xl">
-        <div className="max-w-lg mx-auto">
-          <h1 className="text-white text-lg font-semibold">Insights</h1>
+    <main className="min-h-screen bg-slate-950 pb-28">
+      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 px-4 pt-14 pb-6 overflow-hidden">
+        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5 blur-xl" />
+        <div className="max-w-lg mx-auto relative">
+          <p className="text-blue-200 text-xs font-semibold uppercase tracking-widest mb-1">Analytics</p>
+          <h1 className="text-white text-2xl font-bold mb-4">Insights</h1>
           <InsightsPeriodToggle period={period} />
         </div>
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-4 space-y-4">
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+
+        {/* Period comparison */}
+        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+          <div className="flex justify-between items-center mb-1">
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
               {bounds.current.label} vs {bounds.previous.label}
             </h2>
             {pctChange !== null && (
-              <span className={`text-xs font-semibold px-2 py-1 rounded-full ${pctChange > 0 ? 'bg-red-900/50 text-red-400' : 'bg-green-900/50 text-green-400'}`}>
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${pctChange > 0 ? 'bg-red-500/15 text-red-400' : 'bg-emerald-500/15 text-emerald-400'}`}>
                 {pctChange > 0 ? '↑' : '↓'} {Math.abs(pctChange)}%
               </span>
             )}
+          </div>
+          <div className="flex gap-4 mb-4 text-xs">
+            <span className="text-slate-500">{bounds.previous.label}: <span className="text-slate-300 font-semibold">{fmt(previousTotal)}</span></span>
+            <span className="text-slate-500">{bounds.current.label}: <span className="text-blue-300 font-semibold">{fmt(currentTotal)}</span></span>
           </div>
           <BarChart
             bars={[
@@ -132,17 +131,15 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
             ]}
             maxValue={maxPeriod}
           />
-          <div className="flex gap-4 mt-3 text-xs">
-            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm bg-slate-600" /><span className="text-slate-400">{bounds.previous.label}: {fmt(previousTotal)}</span></div>
-            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm bg-blue-500" /><span className="text-slate-300">{bounds.current.label}: {fmt(currentTotal)}</span></div>
-          </div>
         </div>
 
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-4">Last 6 Months</h2>
+        {/* 6-month trend */}
+        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">6-Month Trend</h2>
           <BarChart bars={monthlyBars} maxValue={maxMonthly} />
         </div>
 
+        {/* Most / Least */}
         {mostSpent && leastSpent && (
           <div className="grid grid-cols-2 gap-3">
             <InsightCategoryCard title="Most Spent" categoryId={mostSpent[0]} amount={mostSpent[1]}
@@ -152,10 +149,12 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
           </div>
         )}
 
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Breakdown by Category</h2>
+        {/* Category breakdown */}
+        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Category Breakdown</h2>
           <CategoryBars transactions={currentTxs} />
         </div>
+
       </div>
       <BottomNav />
     </main>

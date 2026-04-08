@@ -34,16 +34,20 @@ export default async function DailyPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-900 pb-24">
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 px-4 pt-12 pb-6 rounded-b-3xl shadow-xl">
-        <div className="max-w-lg mx-auto">
-          <h1 className="text-white text-lg font-semibold">Daily View</h1>
-          <p className="text-blue-200 text-sm mt-1">Last 30 days</p>
+    <main className="min-h-screen bg-slate-950 pb-28">
+      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 px-4 pt-14 pb-6 overflow-hidden">
+        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5 blur-xl" />
+        <div className="max-w-lg mx-auto relative">
+          <p className="text-blue-200 text-xs font-semibold uppercase tracking-widest mb-1">Daily Breakdown</p>
+          <h1 className="text-white text-2xl font-bold">Last 30 Days</h1>
         </div>
       </div>
       <div className="max-w-lg mx-auto px-4 pt-4 space-y-3">
         {groups.size === 0 && (
-          <p className="text-slate-500 text-sm text-center py-12">No transactions yet</p>
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <span className="text-5xl opacity-20">📅</span>
+            <p className="text-slate-500 text-sm">No transactions yet</p>
+          </div>
         )}
         {Array.from(groups.entries()).map(([date, txs]) => (
           <DayGroup key={date} label={dayLabel(date)} transactions={txs} />

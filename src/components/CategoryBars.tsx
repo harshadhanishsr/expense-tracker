@@ -1,7 +1,11 @@
 // src/components/CategoryBars.tsx
-import { getCategoryById } from '@/lib/categories'
+import { getCategoryById, CATEGORY_COLORS } from '@/lib/categories'
 
 interface Transaction { type: string; amount: number; category: string }
+
+function fmt(n: number) {
+  return '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 })
+}
 
 export default function CategoryBars({ transactions }: { transactions: Transaction[] }) {
   const totals: Record<string, number> = {}
@@ -12,22 +16,34 @@ export default function CategoryBars({ transactions }: { transactions: Transacti
   const max = sorted[0]?.[1] ?? 1
 
   if (!sorted.length) {
-    return <p className="text-slate-500 text-sm text-center py-4">No expenses this month</p>
+    return (
+      <div className="flex flex-col items-center justify-center py-6 gap-2">
+        <span className="text-3xl opacity-30">📊</span>
+        <p className="text-slate-500 text-sm">No expenses this month</p>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {sorted.map(([id, total]) => {
         const cat = getCategoryById(id)
+        const colors = CATEGORY_COLORS[id] ?? CATEGORY_COLORS['other_expense']
         const pct = Math.round((total / max) * 100)
         return (
-          <div key={id}>
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-slate-300">{cat?.emoji} {cat?.label ?? id}</span>
-              <span className="text-slate-400">₹{total.toLocaleString('en-IN')}</span>
+          <div key={id} className="group">
+            <div className="flex justify-between items-center mb-2">
+              <div className="flex items-center gap-2">
+                <div className={`w-8 h-8 rounded-xl ${colors.bg} flex items-center justify-center text-sm`}>
+                  {cat?.emoji ?? '📦'}
+                </div>
+                <span className="text-slate-300 text-sm font-medium">{cat?.label ?? id}</span>
+              </div>
+              <span className={`text-sm font-bold ${colors.text}`}>{fmt(total)}</span>
             </div>
-            <div className="bg-slate-700 rounded-full h-2">
-              <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
+            <div className="relative h-2 bg-slate-700/50 rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all duration-700 ease-out ${colors.bar}`}
+                style={{ width: `${pct}%` }} />
             </div>
           </div>
         )

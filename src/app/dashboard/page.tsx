@@ -29,6 +29,8 @@ async function getRecurring(): Promise<Transaction[]> {
   return (data ?? []) as Transaction[]
 }
 
+function fmt(n: number) { return '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 }) }
+
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
   const params = await searchParams
   const now = new Date()
@@ -53,52 +55,87 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const isCurrentMonth = month === currentMonth
   const monthLabel = new Date(year, m-1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
 
-  function fmt(n: number) { return '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 }) }
-
   return (
-    <main className="min-h-screen bg-slate-900 pb-24">
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 px-4 pt-12 pb-8 rounded-b-3xl shadow-xl">
-        <div className="max-w-lg mx-auto">
+    <main className="min-h-screen bg-slate-950 pb-28">
+
+      {/* Hero Header */}
+      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 px-4 pt-14 pb-10 overflow-hidden">
+        {/* Decorative circles */}
+        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/5 blur-xl" />
+        <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-indigo-500/20 blur-xl" />
+
+        <div className="max-w-lg mx-auto relative">
+          {/* Month nav */}
           <div className="flex items-center justify-between mb-6">
-            <Link href={`/dashboard?month=${prevMonth}`} className="text-blue-200 hover:text-white p-2 -ml-2 text-xl">‹</Link>
-            <h1 className="text-white font-semibold">{monthLabel}</h1>
-            <Link href={`/dashboard?month=${nextMonth}`} className={`p-2 -mr-2 text-xl ${isCurrentMonth ? 'text-blue-800 pointer-events-none' : 'text-blue-200 hover:text-white'}`}>›</Link>
+            <Link href={`/dashboard?month=${prevMonth}`}
+              className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-lg transition-all active:scale-95">
+              ‹
+            </Link>
+            <p className="text-blue-100 text-sm font-semibold tracking-wide">{monthLabel}</p>
+            <Link href={`/dashboard?month=${nextMonth}`}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-all active:scale-95
+                ${isCurrentMonth ? 'bg-white/5 text-blue-900 pointer-events-none' : 'bg-white/10 hover:bg-white/20 text-white'}`}>
+              ›
+            </Link>
           </div>
-          <div className="mb-4">
-            <p className="text-blue-200 text-xs uppercase tracking-widest mb-1">Net Balance</p>
-            <p className="text-white text-4xl font-extrabold">{fmt(balance)}</p>
+
+          {/* Balance */}
+          <div className="mb-6">
+            <p className="text-blue-200 text-xs font-semibold uppercase tracking-widest mb-1">Net Balance</p>
+            <p className="text-white font-extrabold tracking-tight" style={{ fontSize: 'clamp(2rem, 8vw, 3rem)' }}>
+              {fmt(balance)}
+            </p>
           </div>
-          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-white/20">
-            <div>
-              <p className="text-blue-200 text-xs mb-1">↑ Income</p>
-              <p className="text-green-300 font-bold text-sm">{fmt(income)}</p>
+
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-2.5">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/10">
+              <p className="text-blue-200 text-[10px] font-semibold uppercase tracking-wider mb-1">Income</p>
+              <p className="text-emerald-300 font-bold text-sm tabular-nums">{fmt(income)}</p>
             </div>
-            <div>
-              <p className="text-blue-200 text-xs mb-1">↓ Spent</p>
-              <p className="text-red-300 font-bold text-sm">{fmt(expenses)}</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/10">
+              <p className="text-blue-200 text-[10px] font-semibold uppercase tracking-wider mb-1">Spent</p>
+              <p className="text-red-300 font-bold text-sm tabular-nums">{fmt(expenses)}</p>
             </div>
-            <div>
-              <p className="text-blue-200 text-xs mb-1">📅 Today</p>
-              <p className="text-white font-bold text-sm">{fmt(todaySpend)}</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/10">
+              <p className="text-blue-200 text-[10px] font-semibold uppercase tracking-wider mb-1">Today</p>
+              <p className="text-white font-bold text-sm tabular-nums">{fmt(todaySpend)}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 pt-4 space-y-4">
+      <div className="max-w-lg mx-auto px-4 pt-5 space-y-4">
+
+        {/* Summary cards */}
         <SummaryCards income={income} expenses={expenses} />
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Top Spending</h2>
+
+        {/* Top spending */}
+        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-6 h-6 rounded-lg bg-blue-500/20 flex items-center justify-center text-xs">📊</div>
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Top Spending</h2>
+          </div>
           <CategoryBars transactions={transactions} />
         </div>
+
+        {/* Recurring */}
         <RecurringSection transactions={recurring} />
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Recent</h2>
-            <Link href="/history" className="text-blue-400 text-xs hover:underline">See all</Link>
+
+        {/* Recent transactions */}
+        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-slate-700 flex items-center justify-center text-xs">🕐</div>
+              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Recent</h2>
+            </div>
+            <Link href="/history" className="text-blue-400 text-xs font-medium hover:text-blue-300 transition-colors">
+              See all →
+            </Link>
           </div>
           <TransactionList transactions={transactions} limit={5} />
         </div>
+
       </div>
       <BottomNav />
     </main>

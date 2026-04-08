@@ -1,5 +1,5 @@
 // src/components/CategoryDayGrid.tsx
-import { CATEGORIES } from '@/lib/categories'
+import { CATEGORIES, CATEGORY_COLORS } from '@/lib/categories'
 import type { Transaction } from '@/lib/types'
 
 export default function CategoryDayGrid({ transactions }: { transactions: Transaction[] }) {
@@ -14,12 +14,15 @@ export default function CategoryDayGrid({ transactions }: { transactions: Transa
       {expenseCategories.map(cat => {
         const amount = totals[cat.id] ?? 0
         const hasSpend = amount > 0
+        const colors = CATEGORY_COLORS[cat.id] ?? CATEGORY_COLORS['other_expense']
         return (
-          <div key={cat.id} className={`rounded-xl p-2 text-center transition-opacity ${hasSpend ? 'opacity-100' : 'opacity-30'}`}>
-            <div className="text-lg">{cat.emoji}</div>
-            <div className="text-slate-500 text-[10px] mt-1 leading-tight">{cat.label}</div>
-            <div className={`text-[11px] font-semibold mt-1 ${hasSpend ? 'text-red-400' : 'text-slate-600'}`}>
-              {hasSpend ? `₹${amount.toLocaleString('en-IN')}` : '—'}
+          <div key={cat.id}
+            className={`rounded-xl p-2.5 text-center transition-all duration-200
+              ${hasSpend ? `${colors.bg} border border-current/10` : 'bg-slate-800/30 opacity-35'}`}>
+            <div className="text-xl leading-none">{cat.emoji}</div>
+            <div className="text-slate-400 text-[9px] mt-1.5 leading-tight font-medium">{cat.label}</div>
+            <div className={`text-[10px] font-bold mt-1 tabular-nums ${hasSpend ? colors.text : 'text-slate-600'}`}>
+              {hasSpend ? `₹${amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '—'}
             </div>
           </div>
         )

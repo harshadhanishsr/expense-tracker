@@ -7,17 +7,26 @@ export default function SummaryCards({ income, expenses }: { income: number; exp
   const balance = income - expenses
   return (
     <div className="grid grid-cols-3 gap-3">
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 border-l-4 border-l-green-500">
-        <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Income</p>
-        <p className="text-base font-bold text-green-400">{fmt(income)}</p>
+      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4">
+        <div className="flex items-center gap-1.5 mb-2">
+          <span className="text-base">↑</span>
+          <p className="text-xs text-emerald-400/70 font-semibold uppercase tracking-wider">Income</p>
+        </div>
+        <p className="text-emerald-400 font-bold text-sm tabular-nums">{fmt(income)}</p>
       </div>
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 border-l-4 border-l-red-500">
-        <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Spent</p>
-        <p className="text-base font-bold text-red-400">{fmt(expenses)}</p>
+      <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4">
+        <div className="flex items-center gap-1.5 mb-2">
+          <span className="text-base">↓</span>
+          <p className="text-xs text-red-400/70 font-semibold uppercase tracking-wider">Spent</p>
+        </div>
+        <p className="text-red-400 font-bold text-sm tabular-nums">{fmt(expenses)}</p>
       </div>
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 border-l-4 border-l-blue-500">
-        <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Balance</p>
-        <p className={`text-base font-bold ${balance >= 0 ? 'text-blue-400' : 'text-red-400'}`}>{fmt(balance)}</p>
+      <div className={`${balance >= 0 ? 'bg-blue-500/10 border-blue-500/20' : 'bg-red-500/10 border-red-500/20'} border rounded-2xl p-4`}>
+        <div className="flex items-center gap-1.5 mb-2">
+          <span className="text-base">◎</span>
+          <p className={`text-xs font-semibold uppercase tracking-wider ${balance >= 0 ? 'text-blue-400/70' : 'text-red-400/70'}`}>Left</p>
+        </div>
+        <p className={`font-bold text-sm tabular-nums ${balance >= 0 ? 'text-blue-400' : 'text-red-400'}`}>{fmt(balance)}</p>
       </div>
     </div>
   )
