@@ -22,7 +22,7 @@ export default function TransactionForm() {
   const [description, setDescription] = useState(prefillDescription)
   const [date, setDate] = useState(new Date().toISOString().slice(0,10))
   const [isRecurring, setIsRecurring] = useState(false)
-  const [recurrenceInterval, setRecurrenceInterval] = useState<'weekly'|'monthly'>('monthly')
+  const [recurrenceInterval, setRecurrenceInterval] = useState<'daily'|'weekly'|'monthly'>('monthly')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -152,7 +152,7 @@ export default function TransactionForm() {
         </div>
         {isRecurring && (
           <div className="mt-3 flex gap-2">
-            {(['weekly','monthly'] as const).map(interval => (
+            {(['daily','weekly','monthly'] as const).map(interval => (
               <button key={interval} type="button" onClick={() => setRecurrenceInterval(interval)}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-semibold capitalize transition-all active:scale-95
                   ${recurrenceInterval===interval

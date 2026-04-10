@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   if (typeof amount !== 'number' || amount <= 0) {
     return NextResponse.json({ error: 'amount must be a positive number' }, { status: 400 })
   }
-  if (is_recurring && !['weekly', 'monthly'].includes(recurrence_interval)) {
+  if (is_recurring && !['daily', 'weekly', 'monthly'].includes(recurrence_interval)) {
     return NextResponse.json({ error: 'recurrence_interval must be weekly or monthly' }, { status: 400 })
   }
 

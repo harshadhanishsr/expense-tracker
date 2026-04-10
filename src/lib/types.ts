@@ -8,7 +8,7 @@ export interface Transaction {
   date: string
   created_at: string
   is_recurring: boolean
-  recurrence_interval: 'weekly' | 'monthly' | null
+  recurrence_interval: 'daily' | 'weekly' | 'monthly' | null
 }
 
 export interface Suggestion {
