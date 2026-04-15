@@ -57,17 +57,19 @@ export function parse(input: string): ParseResult {
   // Pattern: "spent <amount> on <desc>"
   const spentOnMatch = lower.match(/^spent\s+(\d+(?:\.\d+)?)\s+on\s+(.+)$/)
   if (spentOnMatch) {
-    const desc = spentOnMatch[2]
-    const cat = findCategory(desc.split(/\s+/))
+    const trimmedMatch = trimmed.match(/^spent\s+(\d+(?:\.\d+)?)\s+on\s+(.+)$/i)
+    const desc = trimmedMatch ? trimmedMatch[2] : spentOnMatch[2]
+    const cat = findCategory(spentOnMatch[2].split(/\s+/))
     return { amount, category: cat, description: desc, type: 'expense', confidence: 'high' }
   }
 
   // Pattern: "<desc> <amount> for <note>"
   const forMatch = lower.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s+for\s+(.+)$/)
   if (forMatch) {
-    const desc = forMatch[1]
-    const note = forMatch[3]
-    const cat = findCategory([...desc.split(/\s+/), ...note.split(/\s+/)])
+    const trimmedMatch = trimmed.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s+for\s+(.+)$/i)
+    const desc = trimmedMatch ? trimmedMatch[1] : forMatch[1]
+    const note = trimmedMatch ? trimmedMatch[3] : forMatch[3]
+    const cat = findCategory([...forMatch[1].split(/\s+/), ...forMatch[3].split(/\s+/)])
     return {
       amount, category: cat,
       description: `${desc} (${note})`, type: 'expense', confidence: 'high',
@@ -77,9 +79,10 @@ export function parse(input: string): ParseResult {
   // Pattern: "<desc> to <place> <amount>"
   const toPlaceMatch = lower.match(/^(.+?)\s+to\s+(.+?)\s+(\d+(?:\.\d+)?)$/)
   if (toPlaceMatch) {
-    const desc = toPlaceMatch[1]
-    const place = toPlaceMatch[2]
-    const cat = findCategory(desc.split(/\s+/))
+    const trimmedMatch = trimmed.match(/^(.+?)\s+to\s+(.+?)\s+(\d+(?:\.\d+)?)$/i)
+    const desc = trimmedMatch ? trimmedMatch[1] : toPlaceMatch[1]
+    const place = trimmedMatch ? trimmedMatch[2] : toPlaceMatch[2]
+    const cat = findCategory(toPlaceMatch[1].split(/\s+/))
     return {
       amount, category: cat,
       description: `${desc} to ${place}`, type: 'expense', confidence: 'high',
