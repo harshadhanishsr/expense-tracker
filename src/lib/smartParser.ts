@@ -89,19 +89,14 @@ export function parse(input: string): ParseResult {
   // Pattern: "<keyword> <amount>" or "<amount> <keyword>"
   const knownCat = findCategory(words)
   if (knownCat !== 'other_expense') {
-    const desc = words.filter(w => isNaN(parseFloat(w))).join(' ')
+    const originalWords = trimmed.split(/\s+/)
+    const desc = originalWords.filter(w => isNaN(parseFloat(w))).join(' ')
     return { amount, category: knownCat, description: desc || trimmed, type: 'expense', confidence: 'high' }
   }
 
-  // Check if ANY word matches a keyword
-  const hasKeyword = words.some(w => KEYWORD_MAP[w.toLowerCase()])
-  if (hasKeyword) {
-    const desc = words.filter(w => isNaN(parseFloat(w))).join(' ')
-    return { amount, category: findCategory(words), description: desc || trimmed, type: 'expense', confidence: 'high' }
-  }
-
   // Fallback: number only or unrecognised text
-  const desc = words.filter(w => isNaN(parseFloat(w))).join(' ')
+  const originalWords = trimmed.split(/\s+/)
+  const desc = originalWords.filter(w => isNaN(parseFloat(w))).join(' ')
   return {
     amount, category: 'other_expense',
     description: desc || trimmed, type: 'expense', confidence: 'low',

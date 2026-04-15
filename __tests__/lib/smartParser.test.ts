@@ -43,12 +43,14 @@ describe('smartParser.parse', () => {
     const r = parse('medicine 250')
     expect(r.category).toBe('health')
     expect(r.amount).toBe(250)
+    expect(r.confidence).toBe('high')
   })
 
   it('parses "movie 400" → entertainment, 400, high', () => {
     const r = parse('movie 400')
     expect(r.category).toBe('entertainment')
     expect(r.amount).toBe(400)
+    expect(r.confidence).toBe('high')
   })
 
   // Low confidence fallbacks
@@ -80,7 +82,12 @@ describe('smartParser.parse', () => {
 
   it('returns description from input', () => {
     const r = parse('dinner at pizza place 350')
-    expect(r.description).toBeTruthy()
-    expect(typeof r.description).toBe('string')
+    expect(r.description).toBe('dinner at pizza place')
+  })
+
+  it('returns confidence low and amount 0 for input with no number', () => {
+    const r = parse('just food')
+    expect(r.amount).toBe(0)
+    expect(r.confidence).toBe('low')
   })
 })

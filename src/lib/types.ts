@@ -41,6 +41,6 @@ export interface ParseResult {
   amount: number
   category: string        // valid category ID: 'food', 'transport', etc.
   description: string
-  type: 'expense' | 'income'
+  type: 'expense'
   confidence: 'high' | 'low'
 }
