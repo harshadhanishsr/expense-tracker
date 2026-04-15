@@ -24,8 +24,9 @@ export async function GET(_req: NextRequest) {
 
   if (!trips?.length) return NextResponse.json({ trips: [] })
 
-  const { data: transactions } = await supabase
+  const { data: transactions, error: txErr } = await supabase
     .from('transactions').select('trip_id, amount, type').order('date', { ascending: false })
+  if (txErr) return NextResponse.json({ error: txErr.message }, { status: 500 })
 
   const enriched = trips.map(t => computeTripFields(t, transactions ?? []))
   return NextResponse.json({ trips: enriched })
@@ -65,6 +66,6 @@ export async function POST(req: NextRequest) {
     .select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const trip: Trip = { ...data, total_spent: 0, expense_count: 0, days_elapsed: 1, total_days: 1 }
+  const trip: Trip = computeTripFields(data, [])
   return NextResponse.json({ trip }, { status: 201 })
 }

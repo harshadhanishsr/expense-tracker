@@ -46,10 +46,36 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (end_date !== undefined) updates.end_date = end_date
   if (budget !== undefined) updates.budget = budget
 
+  // Fix 3: Input validation
+  if (name !== undefined && (typeof name !== 'string' || !name.trim())) {
+    return NextResponse.json({ error: 'name must be a non-empty string' }, { status: 400 })
+  }
+  if (budget !== undefined && budget !== null && (typeof budget !== 'number' || budget <= 0)) {
+    return NextResponse.json({ error: 'budget must be a positive number' }, { status: 400 })
+  }
+
   const supabase = getSupabaseAdmin()
+
+  // Fix 2: Validate end_date >= start_date by fetching current trip
+  if (end_date !== undefined) {
+    const { data: currentTrip, error: fetchErr } = await supabase
+      .from('trips').select('start_date').eq('id', id).single()
+    if (fetchErr) {
+      if (fetchErr.code === 'PGRST116') return NextResponse.json({ error: 'Trip not found' }, { status: 404 })
+      return NextResponse.json({ error: fetchErr.message }, { status: 500 })
+    }
+    if (new Date(end_date) < new Date(currentTrip.start_date)) {
+      return NextResponse.json({ error: 'end_date must be >= start_date' }, { status: 400 })
+    }
+  }
+
   const { data, error } = await supabase
     .from('trips').update(updates).eq('id', id).select().single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  // Fix 5: Return 404 for unknown trip ID
+  if (error) {
+    if (error.code === 'PGRST116') return NextResponse.json({ error: 'Trip not found' }, { status: 404 })
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
   return NextResponse.json({ trip: data })
 }
 

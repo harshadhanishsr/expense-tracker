@@ -22,11 +22,24 @@ function makePost(body: object) {
 describe('GET /api/trips', () => {
   it('returns trips array', async () => {
     mockSupabase.mockReturnValue({
-      from: () => ({
-        select: () => ({
-          order: async () => ({ data: [{ id: '1', name: 'Test', start_date: '2026-04-12', end_date: '2026-04-17' }], error: null }),
-        }),
-      }),
+      from: (table: string) => {
+        if (table === 'transactions') {
+          return {
+            select: () => ({
+              order: async () => ({ data: [], error: null }),
+            }),
+          }
+        }
+        // trips table
+        return {
+          select: () => ({
+            order: async () => ({
+              data: [{ id: '1', name: 'Test', start_date: '2026-04-12', end_date: '2026-04-17', budget: null, created_at: '' }],
+              error: null,
+            }),
+          }),
+        }
+      },
     })
     const res = await GET(makeGet())
     expect(res.status).toBe(200)
