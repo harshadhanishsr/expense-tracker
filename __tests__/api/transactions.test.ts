@@ -79,4 +79,40 @@ describe('POST /api/transactions', () => {
     const json = await res.json()
     expect(json.transaction).toEqual(newTransaction)
   })
+
+  it('accepts and persists trip_id', async () => {
+    const newTransaction = { id: '3', type: 'expense', amount: 100, category: 'food', date: '2025-01-01', trip_id: 'trip-uuid' }
+    mockGetSupabaseAdmin.mockReturnValue({
+      from: () => ({
+        insert: () => ({
+          select: () => ({
+            single: async () => ({ data: newTransaction, error: null }),
+          }),
+        }),
+      }),
+    })
+    const res = await POST(makePostRequest({
+      type: 'expense', amount: 100, category: 'food', date: '2025-01-01', trip_id: 'trip-uuid',
+    }))
+    expect(res.status).toBe(201)
+    const json = await res.json()
+    expect(json.transaction.trip_id).toBe('trip-uuid')
+  })
+
+  it('accepts null trip_id', async () => {
+    const newTransaction = { id: '4', type: 'expense', amount: 100, category: 'food', date: '2025-01-01', trip_id: null }
+    mockGetSupabaseAdmin.mockReturnValue({
+      from: () => ({
+        insert: () => ({
+          select: () => ({
+            single: async () => ({ data: newTransaction, error: null }),
+          }),
+        }),
+      }),
+    })
+    const res = await POST(makePostRequest({
+      type: 'expense', amount: 100, category: 'food', date: '2025-01-01', trip_id: null,
+    }))
+    expect(res.status).toBe(201)
+  })
 })

@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
-  const { type, amount, category, date, description, is_recurring, recurrence_interval } = body
+  const { type, amount, category, date, description, is_recurring, recurrence_interval, trip_id } = body
 
   if (!type || !amount || !category || !date) {
     return NextResponse.json({ error: 'type, amount, category, and date are required' }, { status: 400 })
@@ -47,6 +47,9 @@ export async function POST(req: NextRequest) {
   if (is_recurring && !['daily', 'weekly', 'monthly'].includes(recurrence_interval)) {
     return NextResponse.json({ error: 'recurrence_interval must be weekly or monthly' }, { status: 400 })
   }
+  if (trip_id !== undefined && trip_id !== null && typeof trip_id !== 'string') {
+    return NextResponse.json({ error: 'trip_id must be a string or null' }, { status: 400 })
+  }
 
   const supabase = getSupabaseAdmin()
   const { data, error } = await supabase
@@ -56,6 +59,7 @@ export async function POST(req: NextRequest) {
       description: description ?? null,
       is_recurring: is_recurring ?? false,
       recurrence_interval: is_recurring ? recurrence_interval : null,
+      trip_id: trip_id ?? null,
     })
     .select()
     .single()
