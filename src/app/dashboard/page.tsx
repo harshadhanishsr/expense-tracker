@@ -7,6 +7,7 @@ import CategoryBars from '@/components/CategoryBars'
 import TransactionList from '@/components/TransactionList'
 import RecurringSection from '@/components/RecurringSection'
 import BottomNav from '@/components/BottomNav'
+import ActiveTripBanner from '@/components/ActiveTripBanner'
 import Link from 'next/link'
 import type { Transaction } from '@/lib/types'
 
@@ -106,6 +107,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-5 space-y-4">
+
+        {/* Active trip banner */}
+        <ActiveTripBanner />
 
         {/* Summary cards */}
         <SummaryCards income={income} expenses={expenses} />
