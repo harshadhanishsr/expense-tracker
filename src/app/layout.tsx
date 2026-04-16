@@ -1,6 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import BottomNav from '@/components/BottomNav'
+import AIInputBar from '@/components/AIInputBar'
+import { TripProvider } from '@/lib/tripContext'
+import SWRegistrar from '@/components/SWRegistrar'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,6 +19,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Expense Tracker',
   description: 'Personal income and expense tracker',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Expenses',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#ff6b35',
 };
 
 export default function RootLayout({
@@ -27,7 +41,14 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-[#0a0a0f] text-slate-100">
+        <TripProvider>
+          {children}
+          <AIInputBar />
+          <BottomNav />
+          <SWRegistrar />
+        </TripProvider>
+      </body>
     </html>
   );
 }
