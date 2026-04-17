@@ -39,8 +39,19 @@ export interface TripWithTransactions extends Trip {
 
 export interface ParseResult {
   amount: number
-  category: string        // valid category ID: 'food', 'transport', etc.
+  category: string        // valid category ID from CATEGORIES
   description: string
-  type: 'expense'
+  type: 'expense' | 'income'
   confidence: 'high' | 'low'
+}
+
+export interface Insight {
+  type: 'recurring' | 'spike' | 'digest'
+  title: string
+  body: string
+  action?: {
+    label: string
+    prefill: { category: string; amount: number; description: string; type: 'expense' | 'income' }
+  }
+  dismissKey: string
 }

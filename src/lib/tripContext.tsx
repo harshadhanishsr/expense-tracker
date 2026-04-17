@@ -3,20 +3,27 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
 import { Trip } from './types'
 
+type PrefillData = { category: string; amount: number; description: string; type: 'expense' | 'income' }
+
 interface TripContextValue {
   activeTrip: Trip | null
   setActiveTrip: (t: Trip | null) => void
   refreshActiveTrip: () => Promise<void>
+  pendingPrefill: PrefillData | null
+  setPendingPrefill: (v: PrefillData | null) => void
 }
 
 const TripContext = createContext<TripContextValue>({
   activeTrip: null,
   setActiveTrip: () => {},
   refreshActiveTrip: async () => {},
+  pendingPrefill: null,
+  setPendingPrefill: () => {},
 })
 
 export function TripProvider({ children }: { children: ReactNode }) {
   const [activeTrip, setActiveTrip] = useState<Trip | null>(null)
+  const [pendingPrefill, setPendingPrefill] = useState<PrefillData | null>(null)
 
   const refreshActiveTrip = useCallback(async () => {
     try {
@@ -37,7 +44,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   useEffect(() => { refreshActiveTrip() }, [refreshActiveTrip])
 
   return (
-    <TripContext.Provider value={{ activeTrip, setActiveTrip, refreshActiveTrip }}>
+    <TripContext.Provider value={{ activeTrip, setActiveTrip, refreshActiveTrip, pendingPrefill, setPendingPrefill }}>
       {children}
     </TripContext.Provider>
   )
