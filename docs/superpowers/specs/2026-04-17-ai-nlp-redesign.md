@@ -92,8 +92,9 @@ src/
 ├── app/
 │   └── dashboard/
 │       └── page.tsx             # Remove blue hero header; add dark bg, gradient blobs,
-│                                #   AI card, heatmap, bento grid
-│                                #   (BottomNav lives in layout.tsx and stays there — do NOT touch it here)
+│                                #   AI card, heatmap, bento grid; add prevMonth fetch;
+│                                #   remove the BottomNav import (line 9) and <BottomNav /> render (line 144)
+│                                #   that currently exist in this file — layout.tsx already renders it
 ```
 
 ---
@@ -205,8 +206,6 @@ export function clearExamples(): void
 
 **Storage limit:** Cap at 200 examples. When adding beyond 200, drop the oldest non-corrected example first. If all stored examples are corrected (edge case), drop the oldest corrected example instead — the cap must remain hard at 200.
 
-**Dismissal key pruning:** Insight dismissal keys (stored separately under `expense-tracker:dismissed:*`) are pruned on read — any key older than 60 days is deleted during `AIInsightCard` mount to prevent unbounded accumulation.
-
 **Size estimate:** 200 examples × ~500 bytes (Tamil Unicode + JSON) ≈ 100 KB. Well within `localStorage`'s 5 MB limit.
 
 ---
@@ -259,17 +258,10 @@ If Ollama is unreachable, return a template fallback:
 
 Pure function — takes a transaction array, returns up to 3 `Insight` objects. No API calls, no side effects.
 
+`Insight` is imported from `src/lib/types.ts` (see Type Changes section). Do NOT redeclare it locally.
+
 ```typescript
-interface Insight {
-  type: 'recurring' | 'spike' | 'digest'
-  title: string
-  body: string
-  action?: {
-    label: string
-    prefill: { category: string; amount: number; description: string; type: 'expense' | 'income' }
-  }
-  dismissKey: string
-}
+import type { Insight, Transaction } from './types'
 
 export function detectInsights(transactions: Transaction[], today: Date): Insight[]
 ```
@@ -283,7 +275,17 @@ export function detectInsights(transactions: Transaction[], today: Date): Insigh
 - `dismissKey` = `recurring-{category}-{weekday}-{YYYY-WW}` (resets weekly)
 - Example body: *"Nee Friday-la petrol fill panna usual — today panniyacha? ⛽"*
 
-**`{YYYY-WW}` format:** ISO 8601 week — use this helper: `const d = new Date(today); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); const w = Math.ceil(((d - new Date(Date.UTC(d.getUTCFullYear(),0,1))) / 86400000 + 1) / 7); const year = d.getUTCFullYear(); return \`${year}-W${String(w).padStart(2,'0')}\`` — yields e.g. `2026-W16`.
+**`{YYYY-WW}` format:** ISO 8601 week. Extract this as a module-level helper in `patternEngine.ts`:
+
+```typescript
+function isoWeek(today: Date): string {
+  const d = new Date(today)
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
+  const w = Math.ceil(((d.getTime() - Date.UTC(d.getUTCFullYear(), 0, 1)) / 86400000 + 1) / 7)
+  return `${d.getUTCFullYear()}-W${String(w).padStart(2, '0')}`
+}
+// e.g. isoWeek(new Date('2026-04-17')) → "2026-W16"
+```
 
 #### Pattern 2: Spending Spike
 
@@ -422,6 +424,7 @@ BottomNav
 - Action buttons: small pill buttons inline, `font-size: 11px`
 - Dismiss: ✕ top-right corner; stores `expense-tracker:dismissed:{dismissKey}` in `localStorage`
 - Height: max 90px total
+- **Dismissal key pruning:** On mount, iterate all `localStorage` keys matching `expense-tracker:dismissed:*`. Parse the stored timestamp value; delete any key older than 60 days. This runs once per mount to prevent unbounded localStorage accumulation. (Stored value format: `JSON.stringify({ dismissedAt: Date.now() })`)
 
 ### `SpendingHeatmap.tsx`
 
@@ -447,7 +450,18 @@ interface BentoCategoryGridProps {
 }
 ```
 
-The dashboard server component already fetches the current month and computes `prevMonth` (e.g. `"2026-03"`). Add a second fetch for the previous calendar month using the existing `GET /api/transactions` endpoint with `?month={prevMonth}` — this param is already supported by the route handler.
+The dashboard server component already fetches the current month and computes `prevMonth` (e.g. `"2026-03"`). In `dashboard/page.tsx`, add a second fetch inside the existing `Promise.all` (or alongside it):
+
+```typescript
+const [transactions, prevMonthTransactions] = await Promise.all([
+  getTransactions(currentMonth),
+  getTransactions(prevMonth),
+])
+```
+
+Pass both to `BentoCategoryGrid`: `<BentoCategoryGrid transactions={transactions} prevMonthTransactions={prevMonthTransactions} />`
+
+The `getTransactions(month)` helper already exists in the file and uses `?month=` — no new utility needed.
 
 **Rendering:** 2×2 grid (`grid-cols-2 gap-3`). For each of the top 4 categories by current-month spend:
 - Emoji (from `getCategoryById(id).emoji`)
