@@ -67,12 +67,15 @@ src/
 ```
 src/
 ├── lib/
-│   └── types.ts                 # Widen ParseResult.type
+│   ├── types.ts                 # Widen ParseResult.type
+│   └── tripContext.tsx          # Add pendingPrefill / setPendingPrefill to TripContextValue
 ├── components/
-│   └── AIInputBar.tsx           # Add Ollama fallback, spinner, smart chips, prefill prop
+│   └── AIInputBar.tsx           # Add Ollama fallback, spinner, smart chips, prefill consumption;
+│                                #   remove old suggestions fetch + suggestion pills UI
 ├── app/
 │   └── dashboard/
-│       └── page.tsx             # Remove blue hero header; add dark bg, AI card, heatmap, bento grid
+│       └── page.tsx             # Remove blue hero header + BottomNav import/usage;
+│                                #   add dark bg, gradient blobs, AI card, heatmap, bento grid
 ```
 
 ---
@@ -329,9 +332,9 @@ When `prefill` is set (from an insight card action), `AIInputBar`:
 3. Focuses the input
 4. Clears `prefill` after consuming it (parent passes `null` after)
 
-`AIInsightCard` calls a callback `onPrefill(prefill)` → parent state → passed as prop to `AIInputBar`.
+`AIInsightCard` calls `setPendingPrefill(insight.action.prefill)` from `useTripContext()`. `AIInputBar` reads `pendingPrefill` from the same context and consumes it. No callback prop or prop drilling required.
 
-Since both `AIInsightCard` and `AIInputBar` are rendered in `layout.tsx` (inside `TripProvider`), the cleanest solution is to extend `TripContext` with a `pendingPrefill` / `setPendingPrefill` field. Both components read from the same context — no prop drilling through the layout.
+**Placement:** `AIInsightCard` is a `'use client'` component rendered inside `dashboard/page.tsx` as a client island (the server page just imports and renders it). It is NOT added to `layout.tsx`. The `TripProvider` in `layout.tsx` wraps the entire tree, so `useTripContext()` works inside `AIInsightCard` even though it is mounted from a server page.
 
 **TripContext extension** — add to `TripContextValue` in `src/lib/tripContext.tsx`:
 
@@ -348,7 +351,9 @@ Note: `Insight.action.prefill` already has `type: 'expense' | 'income'`, matchin
 
 The existing AIInputBar has `getCategoriesForType('expense')` hardcoded on line 75. This must be changed to `getCategoriesForType(parsed?.type ?? 'expense')` so that when Ollama returns an income parse, the category selector shows income categories instead of expense categories.
 
-### Smart chips
+### Smart chips (replaces old suggestion pills)
+
+**Remove** the existing `suggestions` state, the `fetch('/api/transactions/suggestions')` effect, and the `{!parsed && suggestions.length > 0 && ...}` render block entirely. Smart chips replace them.
 
 ```typescript
 function getSmartChips(transactions: Transaction[], hour: number): Chip[]
@@ -358,7 +363,7 @@ function getSmartChips(transactions: Transaction[], hour: number): Chip[]
 - Groups by hour range: morning (6–10), lunch (11–14), evening (17–21), night (21+)
 - Returns top 5 most frequent `{description, category, amount}` tuples for current hour
 - Chips: horizontal scroll, `flex-shrink-0`, max 5, above input bar
-- Tap = sets prefill immediately + submits (no extra confirmation)
+- Tap = directly POSTs the transaction (skips debounce + `parsed` state entirely): call `submitTransaction({ amount: chip.amount, category: chip.category, description: chip.description, type: 'expense', confidence: 'high' })` — extract a `submitTransaction(result: ParseResult)` helper from the existing submit handler so both the normal flow and chip tap share it
 
 ---
 
@@ -422,7 +427,7 @@ interface BentoCategoryGridProps {
 }
 ```
 
-The dashboard server component already fetches the current month. Add a second fetch for the previous calendar month using the existing `GET /api/transactions` endpoint with `from` and `to` query params (ISO dates for first and last day of previous month).
+The dashboard server component already fetches the current month and computes `prevMonth` (e.g. `"2026-03"`). Add a second fetch for the previous calendar month using the existing `GET /api/transactions` endpoint with `?month={prevMonth}` — this param is already supported by the route handler.
 
 **Rendering:** 2×2 grid (`grid-cols-2 gap-3`). For each of the top 4 categories by current-month spend:
 - Emoji (from `getCategoryById(id).emoji`)
