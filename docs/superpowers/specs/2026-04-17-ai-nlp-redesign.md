@@ -18,6 +18,23 @@ All features are zero-cost and work offline (Ollama runs locally).
 
 ## Type Changes
 
+### Add `Insight` to `src/lib/types.ts`
+
+The `Insight` interface is shared between `patternEngine.ts` (producer) and `AIInsightCard.tsx` (consumer). Export it from `src/lib/types.ts` following the existing pattern:
+
+```typescript
+export interface Insight {
+  type: 'recurring' | 'spike' | 'digest'
+  title: string
+  body: string
+  action?: {
+    label: string
+    prefill: { category: string; amount: number; description: string; type: 'expense' | 'income' }
+  }
+  dismissKey: string
+}
+```
+
 ### Widen `ParseResult.type` (`src/lib/types.ts`)
 
 `ParseResult.type` is currently hardcoded `'expense'`. It must be widened to `'expense' | 'income'` so the Ollama parser can return income entries (e.g. "salary 42000 received").
@@ -74,8 +91,9 @@ src/
 │                                #   remove old suggestions fetch + suggestion pills UI
 ├── app/
 │   └── dashboard/
-│       └── page.tsx             # Remove blue hero header + BottomNav import/usage;
-│                                #   add dark bg, gradient blobs, AI card, heatmap, bento grid
+│       └── page.tsx             # Remove blue hero header; add dark bg, gradient blobs,
+│                                #   AI card, heatmap, bento grid
+│                                #   (BottomNav lives in layout.tsx and stays there — do NOT touch it here)
 ```
 
 ---
@@ -185,7 +203,7 @@ export function clearExamples(): void
 - On every successful transaction submission from AIInputBar
 - `corrected: true` when user changed the AI-suggested category or amount before submitting
 
-**Storage limit:** Cap at 200 examples. When adding beyond 200, drop the oldest non-corrected example first. Corrected examples are never auto-dropped (they are the most valuable signal).
+**Storage limit:** Cap at 200 examples. When adding beyond 200, drop the oldest non-corrected example first. If all stored examples are corrected (edge case), drop the oldest corrected example instead — the cap must remain hard at 200.
 
 **Dismissal key pruning:** Insight dismissal keys (stored separately under `expense-tracker:dismissed:*`) are pruned on read — any key older than 60 days is deleted during `AIInsightCard` mount to prevent unbounded accumulation.
 
@@ -354,6 +372,8 @@ The existing AIInputBar has `getCategoriesForType('expense')` hardcoded on line 
 ### Smart chips (replaces old suggestion pills)
 
 **Remove** the existing `suggestions` state, the `fetch('/api/transactions/suggestions')` effect, and the `{!parsed && suggestions.length > 0 && ...}` render block entirely. Smart chips replace them.
+
+Also **delete** `src/app/api/transactions/suggestions/route.ts` (dead route after this change) and remove the `Suggestion` interface from `src/lib/types.ts` (no other consumers).
 
 ```typescript
 function getSmartChips(transactions: Transaction[], hour: number): Chip[]
