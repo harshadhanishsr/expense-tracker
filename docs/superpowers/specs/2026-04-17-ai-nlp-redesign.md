@@ -270,7 +270,7 @@ export function detectInsights(transactions: Transaction[], today: Date): Insigh
 
 - Look at last 28 days of transactions
 - Group by weekday + category
-- If a category appears on the same weekday ≥ 3 times: fire insight on that weekday
+- If a category appears on the same weekday ≥ 3 times: fire insight **only when `today.getDay()` matches that recurring weekday** (i.e. the insight surfaces once per week, on the day the behaviour is expected)
 - `action.prefill` = `{ category, amount: Math.round(average), description: mostCommonDescription, type: 'expense' }`
 - `dismissKey` = `recurring-{category}-{weekday}-{YYYY-WW}` (resets weekly)
 - Example body: *"Nee Friday-la petrol fill panna usual — today panniyacha? ⛽"*
@@ -356,7 +356,7 @@ When `prefill` is set (from an insight card action), `AIInputBar`:
 
 **Placement:** `AIInsightCard` is a `'use client'` component rendered inside `dashboard/page.tsx` as a client island (the server page just imports and renders it). It is NOT added to `layout.tsx`. The `TripProvider` in `layout.tsx` wraps the entire tree, so `useTripContext()` works inside `AIInsightCard` even though it is mounted from a server page.
 
-**TripContext extension** — add to `TripContextValue` in `src/lib/tripContext.tsx`:
+**TripContext extension** — add to `TripContextValue` in `src/lib/tripContext.tsx` and update the `createContext(...)` default object to include `pendingPrefill: null` and `setPendingPrefill: () => {}`:
 
 ```typescript
 pendingPrefill: { category: string; amount: number; description: string; type: 'expense' | 'income' } | null
@@ -375,7 +375,7 @@ The existing AIInputBar has `getCategoriesForType('expense')` hardcoded on line 
 
 **Remove** the existing `suggestions` state, the `fetch('/api/transactions/suggestions')` effect, and the `{!parsed && suggestions.length > 0 && ...}` render block entirely. Smart chips replace them.
 
-Also **delete** `src/app/api/transactions/suggestions/route.ts` (dead route after this change) and remove the `Suggestion` interface from `src/lib/types.ts` (no other consumers).
+Also **delete** `src/app/api/transactions/suggestions/route.ts` (dead route after this change) and remove the `Suggestion` interface from `src/lib/types.ts` (no other consumers). Check `src/hooks/useDescriptionSuggestions.ts` — if it calls this route, delete that hook too.
 
 ```typescript
 function getSmartChips(transactions: Transaction[], hour: number): Chip[]
