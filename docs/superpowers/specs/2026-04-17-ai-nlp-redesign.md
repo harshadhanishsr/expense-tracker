@@ -48,14 +48,18 @@ src/
 │   └── trainingStore.ts         # Reads/writes few-shot example pairs to localStorage
 ├── app/
 │   └── api/
-│       └── ai/
-│           ├── parse/
-│           │   └── route.ts     # POST: NLP parse proxy to Ollama
-│           └── digest/
-│               └── route.ts     # POST: weekly digest text generation via Ollama
+│       ├── ai/
+│       │   ├── parse/
+│       │   │   └── route.ts     # POST: NLP parse proxy to Ollama
+│       │   └── digest/
+│       │       └── route.ts     # POST: weekly digest text generation via Ollama
+│       └── transactions/
+│           └── recent/
+│               └── route.ts     # GET: recent transactions windowed by ?days=N
 └── components/
     ├── AIInsightCard.tsx         # Glassmorphism proactive card (dismissable)
-    └── SpendingHeatmap.tsx       # GitHub-style 3-week calendar grid
+    ├── SpendingHeatmap.tsx       # GitHub-style 3-week calendar grid
+    └── BentoCategoryGrid.tsx     # 2×2 bento tiles replacing SummaryCards + CategoryBars
 ```
 
 ### Modified Files
@@ -258,13 +262,15 @@ export function detectInsights(transactions: Transaction[], today: Date): Insigh
 - `dismissKey` = `recurring-{category}-{weekday}-{YYYY-WW}` (resets weekly)
 - Example body: *"Nee Friday-la petrol fill panna usual — today panniyacha? ⛽"*
 
+**`{YYYY-WW}` format:** ISO 8601 week — use this helper: `const d = new Date(today); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); const w = Math.ceil(((d - new Date(Date.UTC(d.getUTCFullYear(),0,1))) / 86400000 + 1) / 7); const year = d.getUTCFullYear(); return \`${year}-W${String(w).padStart(2,'0')}\`` — yields e.g. `2026-W16`.
+
 #### Pattern 2: Spending Spike
 
 - Compare current week (Mon–today) spend per category vs 4-week rolling average
 - Fire if current week > 1.8× average for any category
 - Pick the single largest spike only
 - No action button
-- `dismissKey` = `spike-{category}-{YYYY-WW}`
+- `dismissKey` = `spike-{category}-{YYYY-WW}` (same ISO 8601 helper above)
 - Example body: *"Saapadu-ku இந்த வாரம் ₹1,800 — usual-a vida 2x aagidhu 🍕"*
 
 #### Pattern 3: Weekly Digest
@@ -293,11 +299,17 @@ This keeps the dashboard server component unchanged. The fetch is independent an
 ### New endpoint: `GET /api/transactions/recent?days=N`
 
 ```typescript
-// Returns transactions from the last N days (default 30, max 90)
+// Request: GET /api/transactions/recent?days=90
+// Query params:
+//   days: number — how many trailing days to include (default: 30, max: 90; values > 90 are silently clamped to 90)
+// Date boundary: calendar days relative to server UTC midnight
 // Response: { transactions: Transaction[] }
+// Error: { error: string } with 400 if days is non-numeric
 ```
 
-This also powers the smart chips (Feature 5). Add to `src/app/api/transactions/recent/route.ts`.
+Add to `src/app/api/transactions/recent/route.ts`.
+
+`AIInsightCard` fetches this endpoint, passes the resulting `transactions` array as a prop to `SpendingHeatmap`. `AIInputBar` makes its own independent fetch from the same endpoint to power smart chips — this is a separate `useEffect` in `AIInputBar` triggered on mount, keeping the two components decoupled.
 
 ---
 
@@ -307,13 +319,13 @@ This also powers the smart chips (Feature 5). Add to `src/app/api/transactions/r
 
 ```typescript
 interface AIInputBarProps {
-  prefill?: { category: string; amount: number; description: string } | null
+  prefill?: { category: string; amount: number; description: string; type: 'expense' | 'income' } | null
 }
 ```
 
 When `prefill` is set (from an insight card action), `AIInputBar`:
 1. Sets the input text to `"{description} {amount}"`
-2. Runs `smartParser.parse()` on it immediately (will be high confidence since category keyword is present)
+2. Runs `smartParser.parse()` on it immediately (will be high confidence since category keyword is present); then overrides `parsed.type` with `prefill.type`
 3. Focuses the input
 4. Clears `prefill` after consuming it (parent passes `null` after)
 
@@ -321,13 +333,28 @@ When `prefill` is set (from an insight card action), `AIInputBar`:
 
 Since both `AIInsightCard` and `AIInputBar` are rendered in `layout.tsx` (inside `TripProvider`), the cleanest solution is to extend `TripContext` with a `pendingPrefill` / `setPendingPrefill` field. Both components read from the same context — no prop drilling through the layout.
 
+**TripContext extension** — add to `TripContextValue` in `src/lib/tripContext.tsx`:
+
+```typescript
+pendingPrefill: { category: string; amount: number; description: string; type: 'expense' | 'income' } | null
+setPendingPrefill: (v: { category: string; amount: number; description: string; type: 'expense' | 'income' } | null) => void
+```
+
+`TripProvider` adds `const [pendingPrefill, setPendingPrefill] = useState(null)` and includes both in the context value. Initial value: `null`.
+
+Note: `Insight.action.prefill` already has `type: 'expense' | 'income'`, matching this shape exactly. `AIInsightCard` passes `insight.action.prefill` directly to `setPendingPrefill`.
+
+### AIInputBar: category selector uses `parsed.type`
+
+The existing AIInputBar has `getCategoriesForType('expense')` hardcoded on line 75. This must be changed to `getCategoriesForType(parsed?.type ?? 'expense')` so that when Ollama returns an income parse, the category selector shows income categories instead of expense categories.
+
 ### Smart chips
 
 ```typescript
 function getSmartChips(transactions: Transaction[], hour: number): Chip[]
 ```
 
-- `transactions` comes from the same `/api/transactions/recent?days=90` fetch (shared with pattern engine via context or passed down)
+- `transactions` fetched via a dedicated `useEffect` in `AIInputBar` on mount: `fetch('/api/transactions/recent?days=90').then(r => r.json()).then(d => setChipTransactions(d.transactions ?? []))`
 - Groups by hour range: morning (6–10), lunch (11–14), evening (17–21), night (21+)
 - Returns top 5 most frequent `{description, category, amount}` tuples for current hour
 - Chips: horizontal scroll, `flex-shrink-0`, max 5, above input bar
@@ -373,7 +400,7 @@ BottomNav
 
 ### `SpendingHeatmap.tsx`
 
-Props: `transactions: Transaction[]` (passed from `AIInsightCard`'s fetch, or fetched independently — same endpoint).
+Props: `transactions: Transaction[]` — passed from `AIInsightCard`'s fetch result (not fetched independently; `AIInsightCard` renders `<SpendingHeatmap transactions={transactions} />`).
 
 - 3 rows × 7 columns = 21 days ending today
 - Each cell: `border-radius: 5px`, colour by daily spend vs 21-day average:
@@ -384,9 +411,27 @@ Props: `transactions: Transaction[]` (passed from `AIInsightCard`'s fetch, or fe
   - 2×+ avg: `rgba(255,107,53,0.95)`
 - Today cell: `box-shadow: 0 0 0 2px #ff6b35`
 
-### BentoCategoryGrid
+### `BentoCategoryGrid.tsx` (`src/components/BentoCategoryGrid.tsx`)
 
-Replaces `SummaryCards` and `CategoryBars` on the dashboard. 2×2 grid of the top 4 spending categories this month. Each tile: emoji, label, amount, vs-last-month delta, mini gradient bar.
+Replaces `SummaryCards` and `CategoryBars` on the dashboard.
+
+```typescript
+interface BentoCategoryGridProps {
+  transactions: Transaction[]  // current month's transactions (passed from dashboard server component)
+  prevMonthTransactions: Transaction[]  // previous month's transactions (passed from dashboard server component)
+}
+```
+
+The dashboard server component already fetches the current month. Add a second fetch for the previous calendar month using the existing `GET /api/transactions` endpoint with `from` and `to` query params (ISO dates for first and last day of previous month).
+
+**Rendering:** 2×2 grid (`grid-cols-2 gap-3`). For each of the top 4 categories by current-month spend:
+- Emoji (from `getCategoryById(id).emoji`)
+- Label (`getCategoryById(id).label`)
+- Amount (`₹{amount.toLocaleString('en-IN')}`)
+- Delta: `+₹X` in green or `-₹X` in orange vs previous month (show `—` if no previous month data)
+- Mini gradient bar: `height: 3px`, fill proportion = `amount / maxCategoryAmount` across the 4 tiles, `background: linear-gradient(90deg, #ff6b35, #ff9f00)`
+
+Tile style: `bg-white/[0.04] border border-white/[0.06] rounded-2xl p-3`
 
 ---
 
