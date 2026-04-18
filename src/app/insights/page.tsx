@@ -4,9 +4,9 @@ export const dynamic = 'force-dynamic'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import BarChart from '@/components/BarChart'
 import InsightsPeriodToggle from '@/components/InsightsPeriodToggle'
-import InsightCategoryCard from '@/components/InsightCategoryCard'
 import CategoryBars from '@/components/CategoryBars'
 import BottomNav from '@/components/BottomNav'
+import { getCategoryById } from '@/lib/categories'
 import type { Transaction } from '@/lib/types'
 
 type Period = 'week' | 'month' | 'year'
@@ -45,19 +45,14 @@ function getPeriodBounds(period: Period) {
 function totalExpense(txs: Transaction[]) {
   return txs.filter(t => t.type === 'expense').reduce((s,t) => s + Number(t.amount), 0)
 }
-
-function categoryTotals(txs: Transaction[]): Record<string, number> {
-  const out: Record<string, number> = {}
-  for (const t of txs.filter(t => t.type === 'expense')) {
-    out[t.category] = (out[t.category] ?? 0) + Number(t.amount)
-  }
-  return out
+function totalIncome(txs: Transaction[]) {
+  return txs.filter(t => t.type === 'income').reduce((s,t) => s + Number(t.amount), 0)
 }
+function fmt(n: number) { return '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 }) }
 
 export default async function InsightsPage({ searchParams }: { searchParams: Promise<{ period?: string }> }) {
   const params = await searchParams
   const period = (['week','month','year'].includes(params.period ?? '') ? params.period : 'month') as Period
-
   const bounds = getPeriodBounds(period)
 
   const sixMonthsAgo = new Date(); sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
@@ -71,9 +66,26 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const currentTxs = allTxs.filter(t => t.date >= bounds.current.start && t.date <= bounds.current.end)
   const previousTxs = allTxs.filter(t => t.date >= bounds.previous.start && t.date <= bounds.previous.end)
 
-  const currentTotal = totalExpense(currentTxs)
-  const previousTotal = totalExpense(previousTxs)
+  const currentExpense = totalExpense(currentTxs)
+  const previousExpense = totalExpense(previousTxs)
+  const currentIncome = totalIncome(currentTxs)
+  const savings = currentIncome - currentExpense
+  const savingsRate = currentIncome > 0 ? Math.round((savings / currentIncome) * 100) : null
 
+  const pctChange = previousExpense > 0
+    ? Math.round(((currentExpense - previousExpense) / previousExpense) * 100)
+    : null
+
+  // Category breakdown
+  const catMap = new Map<string, number>()
+  for (const t of currentTxs.filter(t => t.type === 'expense')) {
+    catMap.set(t.category, (catMap.get(t.category) ?? 0) + Number(t.amount))
+  }
+  const catEntries = [...catMap.entries()].sort((a,b) => b[1]-a[1])
+  const topCat = catEntries[0]
+  const bottomCat = catEntries.filter(([,v]) => v > 0).at(-1)
+
+  // 6-month trend
   const monthlyBars = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(); d.setMonth(d.getMonth() - (5 - i))
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
@@ -83,79 +95,143 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
       previous: 0,
     }
   })
-
-  const catTotals = categoryTotals(currentTxs)
-  const catEntries = Object.entries(catTotals).sort((a,b) => b[1]-a[1])
-  const mostSpent = catEntries[0]
-  const leastSpent = catEntries.filter(([,v]) => v > 0).at(-1)
-
   const maxMonthly = Math.max(...monthlyBars.map(b => b.current), 1)
-  const maxPeriod = Math.max(currentTotal, previousTotal, 1)
-  const pctChange = previousTotal > 0 ? Math.round(((currentTotal - previousTotal) / previousTotal) * 100) : null
+  const maxPeriod = Math.max(currentExpense, previousExpense, 1)
 
-  function fmt(n: number) { return '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 }) }
+  // Streak: consecutive days with at least one transaction
+  const txDates = new Set(allTxs.map(t => t.date))
+  let streak = 0
+  const d = new Date()
+  while (txDates.has(d.toISOString().slice(0, 10))) {
+    streak++
+    d.setDate(d.getDate() - 1)
+  }
+
+  // Daily average for current period
+  const periodDays = Math.max(1, Math.ceil(
+    (new Date(bounds.current.end).getTime() - new Date(bounds.current.start).getTime()) / 86400000
+  ) + 1)
+  const dailyAvg = Math.round(currentExpense / periodDays)
 
   return (
-    <main className="min-h-screen bg-slate-950 pb-28">
-      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 px-4 pt-14 pb-6 overflow-hidden">
-        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5 blur-xl" />
-        <div className="max-w-lg mx-auto relative">
-          <p className="text-blue-200 text-xs font-semibold uppercase tracking-widest mb-1">Analytics</p>
+    <main className="min-h-screen pb-32" style={{ background: '#0b0c15' }}>
+      <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 100% 0%, rgba(139,92,246,0.10), transparent 50%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 0% 80%, rgba(255,107,53,0.07), transparent 50%)' }} />
+      </div>
+
+      <div className="relative z-10 max-w-lg mx-auto px-4">
+        {/* Header */}
+        <div className="pt-14 pb-4">
+          <p className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-1">Analytics</p>
           <h1 className="text-white text-2xl font-bold mb-4">Insights</h1>
           <InsightsPeriodToggle period={period} />
         </div>
-      </div>
 
-      <div className="max-w-lg mx-auto px-4 pt-4 space-y-4">
-
-        {/* Period comparison */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
-          <div className="flex justify-between items-center mb-1">
-            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-              {bounds.current.label} vs {bounds.previous.label}
-            </h2>
+        {/* Key stats row */}
+        <div className="grid grid-cols-3 gap-2.5 mb-4">
+          <div className="rounded-2xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Spent</p>
+            <p className="text-sm font-bold text-red-400 tabular-nums">{fmt(currentExpense)}</p>
             {pctChange !== null && (
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${pctChange > 0 ? 'bg-red-500/15 text-red-400' : 'bg-emerald-500/15 text-emerald-400'}`}>
-                {pctChange > 0 ? '↑' : '↓'} {Math.abs(pctChange)}%
-              </span>
+              <p className={`text-[10px] mt-0.5 font-semibold ${pctChange > 0 ? 'text-red-400/70' : 'text-emerald-400/70'}`}>
+                {pctChange > 0 ? '↑' : '↓'}{Math.abs(pctChange)}% vs prior
+              </p>
             )}
           </div>
-          <div className="flex gap-4 mb-4 text-xs">
-            <span className="text-slate-500">{bounds.previous.label}: <span className="text-slate-300 font-semibold">{fmt(previousTotal)}</span></span>
-            <span className="text-slate-500">{bounds.current.label}: <span className="text-blue-300 font-semibold">{fmt(currentTotal)}</span></span>
+          <div className="rounded-2xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Daily avg</p>
+            <p className="text-sm font-bold text-white/80 tabular-nums">{fmt(dailyAvg)}</p>
+            <p className="text-[10px] mt-0.5 text-white/25">{periodDays} days</p>
           </div>
+          <div className="rounded-2xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Streak</p>
+            <p className="text-sm font-bold text-orange-400 tabular-nums">{streak}d 🔥</p>
+            <p className="text-[10px] mt-0.5 text-white/25">consecutive</p>
+          </div>
+        </div>
+
+        {/* Savings rate */}
+        {currentIncome > 0 && (
+          <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-[11px] text-white/40 font-semibold uppercase tracking-wider">Savings rate</p>
+              <span className={`text-sm font-bold tabular-nums ${(savingsRate ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {savingsRate !== null ? `${savingsRate}%` : '—'}
+              </span>
+            </div>
+            <div className="h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+              <div
+                className="h-2 rounded-full transition-all"
+                style={{
+                  width: `${Math.min(100, Math.max(0, savingsRate ?? 0))}%`,
+                  background: (savingsRate ?? 0) >= 20
+                    ? 'linear-gradient(90deg,#10b981,#34d399)'
+                    : (savingsRate ?? 0) >= 0
+                    ? 'linear-gradient(90deg,#ff6b35,#ff9f00)'
+                    : 'linear-gradient(90deg,#ef4444,#f87171)',
+                }}
+              />
+            </div>
+            <div className="flex justify-between mt-1.5 text-[10px] text-white/25">
+              <span>Income {fmt(currentIncome)}</span>
+              <span>Saved {fmt(Math.max(0, savings))}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Top / bottom categories */}
+        {topCat && bottomCat && topCat[0] !== bottomCat[0] && (
+          <div className="grid grid-cols-2 gap-2.5 mb-4">
+            {[
+              { title: 'Top spend', entry: topCat, accent: '#ef4444' },
+              { title: 'Lowest spend', entry: bottomCat, accent: '#10b981' },
+            ].map(({ title, entry, accent }) => {
+              const cat = getCategoryById(entry[0])
+              return (
+                <div key={title} className="rounded-2xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid rgba(255,255,255,0.06)` }}>
+                  <p className="text-[10px] uppercase tracking-wider mb-2" style={{ color: `${accent}99` }}>{title}</p>
+                  <div className="text-2xl mb-1">{cat?.emoji ?? '📦'}</div>
+                  <p className="text-white text-xs font-semibold">{cat?.label ?? entry[0]}</p>
+                  <p className="text-sm font-bold tabular-nums mt-0.5" style={{ color: accent }}>
+                    {fmt(entry[1])}
+                  </p>
+                  <p className="text-[10px] text-white/25 mt-0.5">
+                    {currentExpense > 0 ? Math.round((entry[1]/currentExpense)*100) : 0}% of spend
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Period comparison */}
+        <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <p className="text-[11px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+            {bounds.current.label} vs {bounds.previous.label}
+          </p>
           <BarChart
             bars={[
-              { label: bounds.previous.label, current: 0, previous: previousTotal },
-              { label: bounds.current.label, current: currentTotal, previous: 0 },
+              { label: bounds.previous.label, current: 0, previous: previousExpense },
+              { label: bounds.current.label, current: currentExpense, previous: 0 },
             ]}
             maxValue={maxPeriod}
           />
         </div>
 
         {/* 6-month trend */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
-          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">6-Month Trend</h2>
+        <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <p className="text-[11px] text-white/40 font-semibold uppercase tracking-wider mb-3">6-Month Trend</p>
           <BarChart bars={monthlyBars} maxValue={maxMonthly} />
         </div>
 
-        {/* Most / Least */}
-        {mostSpent && leastSpent && (
-          <div className="grid grid-cols-2 gap-3">
-            <InsightCategoryCard title="Most Spent" categoryId={mostSpent[0]} amount={mostSpent[1]}
-              pct={currentTotal > 0 ? Math.round((mostSpent[1]/currentTotal)*100) : 0} />
-            <InsightCategoryCard title="Least Spent" categoryId={leastSpent[0]} amount={leastSpent[1]}
-              pct={currentTotal > 0 ? Math.round((leastSpent[1]/currentTotal)*100) : 0} />
-          </div>
-        )}
-
         {/* Category breakdown */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
-          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Category Breakdown</h2>
+        <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <p className="text-[11px] text-white/40 font-semibold uppercase tracking-wider mb-3">Category Breakdown</p>
           <CategoryBars transactions={currentTxs} />
         </div>
-
       </div>
+
       <BottomNav />
     </main>
   )

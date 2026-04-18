@@ -37,11 +37,11 @@ export default function CategoryBars({ transactions }: { transactions: Transacti
                 <div className={`w-8 h-8 rounded-xl ${colors.bg} flex items-center justify-center text-sm`}>
                   {cat?.emoji ?? '📦'}
                 </div>
-                <span className="text-slate-300 text-sm font-medium">{cat?.label ?? id}</span>
+                <span className="text-white/75 text-sm font-medium">{cat?.label ?? id}</span>
               </div>
               <span className={`text-sm font-bold ${colors.text}`}>{fmt(total)}</span>
             </div>
-            <div className="relative h-2 bg-slate-700/50 rounded-full overflow-hidden">
+            <div className="relative h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
               <div className={`h-full rounded-full transition-all duration-700 ease-out ${colors.bar}`}
                 style={{ width: `${pct}%` }} />
             </div>

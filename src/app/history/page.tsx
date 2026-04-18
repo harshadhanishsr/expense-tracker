@@ -6,6 +6,8 @@ import BottomNav from '@/components/BottomNav'
 
 interface Transaction { id: string; type: 'income'|'expense'; amount: number; category: string; description?: string; date: string }
 
+function fmt(n: number) { return '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 }) }
+
 export default function HistoryPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
@@ -45,42 +47,111 @@ export default function HistoryPage() {
     return { val, label }
   })
 
+  // Summary stats
+  const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s,t) => s + Number(t.amount), 0)
+  const totalIncome = transactions.filter(t => t.type === 'income').reduce((s,t) => s + Number(t.amount), 0)
+  const shown = transactions.filter(t => typeFilter === 'all' || t.type === typeFilter)
+  const shownTotal = shown.reduce((s,t) => s + Number(t.amount), 0)
+
+  // Unique days with activity for daily avg
+  const uniqueDays = new Set(transactions.filter(t => t.type === 'expense').map(t => t.date)).size
+  const dailyAvg = uniqueDays > 0 ? Math.round(totalExpense / uniqueDays) : 0
+
   return (
-    <main className="min-h-screen bg-slate-950 pb-28">
-      {/* Header */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 px-4 pt-14 pb-6 overflow-hidden">
-        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5 blur-xl" />
-        <div className="max-w-lg mx-auto relative">
-          <h1 className="text-white text-xl font-bold mb-4">History</h1>
-          <input type="text" placeholder="Search transactions..." value={search} onChange={e => setSearch(e.target.value)}
-            className="w-full bg-white/10 text-white placeholder:text-blue-300/60 rounded-xl px-4 py-3 text-sm outline-none mb-3 border border-white/15 focus:border-white/30 focus:bg-white/15 transition-all" />
-          <div className="flex gap-2">
-            <select value={month} onChange={e => setMonth(e.target.value)}
-              className="bg-white/10 text-white rounded-xl px-3 py-2.5 text-sm outline-none flex-1 border border-white/15 focus:border-white/30 transition-all">
-              {monthOptions.map(o => <option key={o.val} value={o.val} className="bg-slate-900 text-white">{o.label}</option>)}
-            </select>
-            {(['all','income','expense'] as const).map(f => (
-              <button key={f} onClick={() => setTypeFilter(f)}
-                className={`px-3 py-2.5 rounded-xl text-xs font-semibold capitalize transition-all active:scale-95
-                  ${typeFilter===f ? 'bg-white text-blue-700 shadow-lg' : 'bg-white/10 text-blue-100 hover:bg-white/20'}`}>
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
+    <main className="min-h-screen pb-32" style={{ background: '#0b0c15' }}>
+      <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 0% 0%, rgba(255,107,53,0.08), transparent 50%)' }} />
       </div>
 
-      <div className="max-w-lg mx-auto px-4 pt-4">
+      <div className="relative z-10 max-w-lg mx-auto px-4">
+        {/* Header */}
+        <div className="pt-14 pb-4">
+          <p className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-1">Records</p>
+          <h1 className="text-white text-2xl font-bold">History</h1>
+        </div>
+
+        {/* Month selector */}
+        <div className="mb-3">
+          <select
+            value={month}
+            onChange={e => setMonth(e.target.value)}
+            className="w-full rounded-2xl px-4 py-3 text-sm font-medium outline-none appearance-none"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.8)' }}
+          >
+            {monthOptions.map(o => (
+              <option key={o.val} value={o.val} style={{ background: '#111' }}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-3">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/25 text-sm">🔍</span>
+          <input
+            type="text"
+            placeholder="Search transactions…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 rounded-2xl text-sm outline-none"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.85)' }}
+          />
+        </div>
+
+        {/* Type filter pills */}
+        <div className="flex gap-2 mb-4">
+          {(['all', 'expense', 'income'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setTypeFilter(f)}
+              className="flex-1 py-2 rounded-xl text-xs font-bold capitalize transition-all"
+              style={{
+                background: typeFilter === f ? '#ff6b35' : 'rgba(255,255,255,0.06)',
+                color: typeFilter === f ? '#fff' : 'rgba(255,255,255,0.4)',
+                border: `1px solid ${typeFilter === f ? '#ff6b35' : 'rgba(255,255,255,0.08)'}`,
+              }}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+
+        {/* Summary strip */}
+        {!loading && transactions.length > 0 && (
+          <div className="flex gap-2 mb-4">
+            <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Spent</p>
+              <p className="text-sm font-bold text-red-400 tabular-nums">{fmt(totalExpense)}</p>
+            </div>
+            <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Income</p>
+              <p className="text-sm font-bold text-emerald-400 tabular-nums">{fmt(totalIncome)}</p>
+            </div>
+            <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <p className="text-[10px] text-white/30 uppercase tracking-wider mb-0.5">Daily avg</p>
+              <p className="text-sm font-bold text-white/70 tabular-nums">{fmt(dailyAvg)}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Result count */}
+        {!loading && shown.length > 0 && (
+          <p className="text-[11px] text-white/25 mb-3">
+            {shown.length} transaction{shown.length !== 1 ? 's' : ''} · {fmt(shownTotal)}
+          </p>
+        )}
+
+        {/* List */}
         {loading ? (
           <div className="space-y-2 animate-pulse">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-slate-900/60 rounded-2xl" />
+              <div key={i} className="h-16 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)' }} />
             ))}
           </div>
         ) : (
-          <TransactionList transactions={transactions} onDelete={handleDelete} />
+          <TransactionList transactions={shown} onDelete={handleDelete} />
         )}
       </div>
+
       <BottomNav />
     </main>
   )

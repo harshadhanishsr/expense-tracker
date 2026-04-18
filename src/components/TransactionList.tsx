@@ -39,7 +39,11 @@ export default function TransactionList({ transactions, onDelete, limit, showRep
         const colors = CATEGORY_COLORS[t.category] ?? CATEGORY_COLORS['other_expense']
         return (
           <div key={t.id}
-            className="group flex items-center justify-between bg-slate-800/40 hover:bg-slate-800/70 border border-slate-700/40 hover:border-slate-600/60 rounded-2xl px-4 py-3 transition-all duration-200">
+            className="group flex items-center justify-between rounded-2xl px-4 py-3 transition-all duration-200"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)' }}
+          >
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className={`w-11 h-11 rounded-2xl ${colors.bg} flex items-center justify-center flex-shrink-0 text-xl`}>
                 {cat?.emoji ?? '📦'}
@@ -48,7 +52,7 @@ export default function TransactionList({ transactions, onDelete, limit, showRep
                 <p className="text-white font-semibold text-sm truncate leading-tight">
                   {t.description || cat?.label || t.category}
                 </p>
-                <p className="text-slate-500 text-xs mt-0.5">
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
                   {cat?.label ?? t.category} · {formatDate(t.date)}
                 </p>
               </div>
