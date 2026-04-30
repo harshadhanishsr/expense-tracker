@@ -1,6 +1,6 @@
 // src/components/VoiceInput.tsx
 'use client'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 
 interface VoiceInputProps {
   onTranscript: (text: string) => void
@@ -9,17 +9,19 @@ interface VoiceInputProps {
 
 export default function VoiceInput({ onTranscript, onError }: VoiceInputProps) {
   const [listening, setListening] = useState(false)
+  const [supported, setSupported] = useState(false)
   const recRef = useRef<any>(null)
 
-  const SpeechRec =
-    typeof window !== 'undefined'
-      ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-      : null
+  useEffect(() => {
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    setSupported(!!SpeechRec)
+  }, [])
 
-  if (!SpeechRec) return null  // hide mic if not supported
+  if (!supported) return null  // same on server + client initial render
 
   function startListening() {
     if (listening) return
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     const rec = new SpeechRec()
     rec.lang = 'en-IN'
     rec.interimResults = false
@@ -44,8 +46,8 @@ export default function VoiceInput({ onTranscript, onError }: VoiceInputProps) {
     <button
       onClick={startListening}
       className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-lg
-        bg-gradient-to-br from-[#ff6b35] to-[#ff9f00] shadow-lg shadow-orange-500/30
-        ${listening ? 'ring-2 ring-orange-400 ring-offset-1 ring-offset-slate-900' : ''}`}
+        bg-gradient-to-br from-[#6366f1] to-[#a78bfa] shadow-lg shadow-indigo-500/30
+        ${listening ? 'ring-2 ring-indigo-400 ring-offset-1 ring-offset-slate-900' : ''}`}
       aria-label={listening ? 'Listening…' : 'Tap to speak'}
       title={listening ? 'Listening…' : 'Tap to speak'}
     >

@@ -62,7 +62,7 @@ export default function TripsPage() {
           <h1 className="text-2xl font-black text-white">My Trips ✈️</h1>
           <button onClick={() => setShowSheet(true)}
             className="px-3 py-1.5 rounded-xl text-sm font-semibold text-white
-              bg-gradient-to-r from-[#ff6b35] to-[#ff9f00]">
+              bg-gradient-to-r from-[#6366f1] to-[#a78bfa]">
             ＋ New
           </button>
         </div>
@@ -71,7 +71,7 @@ export default function TripsPage() {
 
         {activeTrip && (
           <div className="mb-4">
-            <div className="text-[11px] text-slate-500 uppercase tracking-widest mb-2">🟠 Active</div>
+            <div className="text-[11px] text-slate-500 uppercase tracking-widest mb-2">🔵 Active</div>
             <TripCard trip={activeTrip} variant="active" />
           </div>
         )}
@@ -122,7 +122,7 @@ export default function TripsPage() {
 
             <button onClick={createTrip} disabled={submitting}
               className="w-full mt-4 py-3.5 rounded-2xl font-bold text-white text-base
-                bg-gradient-to-r from-[#ff6b35] to-[#ff9f00] shadow-lg shadow-orange-500/30">
+                bg-gradient-to-r from-[#6366f1] to-[#a78bfa] shadow-lg shadow-indigo-500/30">
               {submitting ? 'Creating…' : 'Create Trip'}
             </button>
             <button onClick={() => setShowSheet(false)}

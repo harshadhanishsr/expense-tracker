@@ -16,8 +16,8 @@ function BudgetRing({ pct }: { pct: number }) {
         strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" />
       <defs>
         <linearGradient id="ring-g" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#ff6b35" />
-          <stop offset="100%" stopColor="#ff9f00" />
+          <stop offset="0%" stopColor="#6366f1" />
+          <stop offset="100%" stopColor="#a78bfa" />
         </linearGradient>
       </defs>
     </svg>
@@ -57,7 +57,7 @@ export default function TripDetailPage() {
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="px-4 pt-14 pb-4">
-          <Link href="/trips" className="text-[12px] text-orange-400 mb-3 block">‹ My Trips</Link>
+          <Link href="/trips" className="text-[12px] text-indigo-400 mb-3 block">‹ My Trips</Link>
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-black text-white">{trip.name}</h1>
@@ -65,9 +65,9 @@ export default function TripDetailPage() {
             </div>
             <span className={`px-2.5 py-1 rounded-xl text-[10px] font-semibold border flex items-center gap-1
               ${isActive
-                ? 'bg-orange-500/20 border-orange-500/35 text-orange-400'
+                ? 'bg-indigo-500/20 border-indigo-500/35 text-indigo-400'
                 : 'bg-slate-700/40 border-slate-600/30 text-slate-400'}`}>
-              {isActive && <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />}
+              {isActive && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />}
               {isActive ? 'Active' : 'Closed'}
             </span>
           </div>
@@ -79,7 +79,7 @@ export default function TripDetailPage() {
             <div className="relative flex-shrink-0">
               <BudgetRing pct={spentPct} />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-sm font-black text-orange-400">{spentPct}%</span>
+                <span className="text-sm font-black text-indigo-400">{spentPct}%</span>
                 <span className="text-[8px] text-slate-500">used</span>
               </div>
             </div>
@@ -87,7 +87,7 @@ export default function TripDetailPage() {
           <div className="flex flex-col gap-1">
             <div>
               <div className="text-[10px] text-slate-500">Total Spent</div>
-              <div className="text-lg font-black text-orange-400">₹{trip.total_spent.toLocaleString()}</div>
+              <div className="text-lg font-black text-indigo-400">₹{trip.total_spent.toLocaleString()}</div>
             </div>
             <div>
               <div className="text-[10px] text-slate-500">Budget Left</div>

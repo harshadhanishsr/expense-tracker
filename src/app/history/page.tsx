@@ -43,30 +43,28 @@ export default function HistoryPage() {
   const monthOptions = Array.from({ length: 12 }, (_, i) => {
     const d = new Date(); d.setMonth(d.getMonth() - i)
     const val = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
-    const label = d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+    const label = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
     return { val, label }
   })
 
-  // Summary stats
   const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s,t) => s + Number(t.amount), 0)
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((s,t) => s + Number(t.amount), 0)
   const shown = transactions.filter(t => typeFilter === 'all' || t.type === typeFilter)
   const shownTotal = shown.reduce((s,t) => s + Number(t.amount), 0)
 
-  // Unique days with activity for daily avg
   const uniqueDays = new Set(transactions.filter(t => t.type === 'expense').map(t => t.date)).size
   const dailyAvg = uniqueDays > 0 ? Math.round(totalExpense / uniqueDays) : 0
 
   return (
-    <main className="min-h-screen pb-32" style={{ background: '#0b0c15' }}>
+    <main className="min-h-screen pb-32" style={{ background: '#020d0a' }}>
       <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 0% 0%, rgba(255,107,53,0.08), transparent 50%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 0% 0%, rgba(13,148,136,0.09), transparent 50%)' }} />
       </div>
 
       <div className="relative z-10 max-w-lg mx-auto px-4">
         {/* Header */}
         <div className="pt-14 pb-4">
-          <p className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-1">Records</p>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: 'rgba(45,212,191,0.5)' }}>Records</p>
           <h1 className="text-white text-2xl font-bold">History</h1>
         </div>
 
@@ -76,10 +74,10 @@ export default function HistoryPage() {
             value={month}
             onChange={e => setMonth(e.target.value)}
             className="w-full rounded-2xl px-4 py-3 text-sm font-medium outline-none appearance-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.8)' }}
+            style={{ background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(45,212,191,0.15)', color: 'rgba(255,255,255,0.8)' }}
           >
             {monthOptions.map(o => (
-              <option key={o.val} value={o.val} style={{ background: '#111' }}>{o.label}</option>
+              <option key={o.val} value={o.val} style={{ background: '#020d0a' }}>{o.label}</option>
             ))}
           </select>
         </div>
@@ -93,7 +91,7 @@ export default function HistoryPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-3 rounded-2xl text-sm outline-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.85)' }}
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.85)' }}
           />
         </div>
 
@@ -105,9 +103,9 @@ export default function HistoryPage() {
               onClick={() => setTypeFilter(f)}
               className="flex-1 py-2 rounded-xl text-xs font-bold capitalize transition-all"
               style={{
-                background: typeFilter === f ? '#ff6b35' : 'rgba(255,255,255,0.06)',
+                background: typeFilter === f ? '#0d9488' : 'rgba(255,255,255,0.05)',
                 color: typeFilter === f ? '#fff' : 'rgba(255,255,255,0.4)',
-                border: `1px solid ${typeFilter === f ? '#ff6b35' : 'rgba(255,255,255,0.08)'}`,
+                border: `1px solid ${typeFilter === f ? 'rgba(45,212,191,0.5)' : 'rgba(255,255,255,0.08)'}`,
               }}
             >
               {f}

@@ -102,8 +102,8 @@ export default function AIInsightCard() {
         <div
           className="relative rounded-[20px] px-4 py-3"
           style={{
-            background: 'rgba(255,107,53,0.08)',
-            border: '1px solid rgba(255,107,53,0.25)',
+            background: 'rgba(99,102,241,0.08)',
+            border: '1px solid rgba(99,102,241,0.25)',
             maxHeight: 90,
             overflow: 'hidden',
           }}
@@ -112,7 +112,7 @@ export default function AIInsightCard() {
             <span
               className="mt-1 w-2 h-2 rounded-full flex-shrink-0"
               style={{
-                background: '#ff6b35',
+                background: '#6366f1',
                 animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite',
               }}
             />
@@ -122,9 +122,9 @@ export default function AIInsightCard() {
                 <button
                   className="mt-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium"
                   style={{
-                    background: 'rgba(255,107,53,0.18)',
-                    border: '1px solid rgba(255,107,53,0.35)',
-                    color: '#ff9060',
+                    background: 'rgba(99,102,241,0.18)',
+                    border: '1px solid rgba(99,102,241,0.35)',
+                    color: '#818cf8',
                   }}
                   onClick={() => {
                     setPendingPrefill(insight.action!.prefill)

@@ -76,7 +76,6 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
     ? Math.round(((currentExpense - previousExpense) / previousExpense) * 100)
     : null
 
-  // Category breakdown
   const catMap = new Map<string, number>()
   for (const t of currentTxs.filter(t => t.type === 'expense')) {
     catMap.set(t.category, (catMap.get(t.category) ?? 0) + Number(t.amount))
@@ -85,7 +84,6 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const topCat = catEntries[0]
   const bottomCat = catEntries.filter(([,v]) => v > 0).at(-1)
 
-  // 6-month trend
   const monthlyBars = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(); d.setMonth(d.getMonth() - (5 - i))
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
@@ -98,7 +96,6 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const maxMonthly = Math.max(...monthlyBars.map(b => b.current), 1)
   const maxPeriod = Math.max(currentExpense, previousExpense, 1)
 
-  // Streak: consecutive days with at least one transaction
   const txDates = new Set(allTxs.map(t => t.date))
   let streak = 0
   const d = new Date()
@@ -107,23 +104,22 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
     d.setDate(d.getDate() - 1)
   }
 
-  // Daily average for current period
   const periodDays = Math.max(1, Math.ceil(
     (new Date(bounds.current.end).getTime() - new Date(bounds.current.start).getTime()) / 86400000
   ) + 1)
   const dailyAvg = Math.round(currentExpense / periodDays)
 
   return (
-    <main className="min-h-screen pb-32" style={{ background: '#0b0c15' }}>
+    <main className="min-h-screen pb-32" style={{ background: '#020d0a' }}>
       <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 100% 0%, rgba(139,92,246,0.10), transparent 50%)' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 0% 80%, rgba(255,107,53,0.07), transparent 50%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 100% 0%, rgba(52,211,153,0.09), transparent 50%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 0% 80%, rgba(13,148,136,0.07), transparent 50%)' }} />
       </div>
 
       <div className="relative z-10 max-w-lg mx-auto px-4">
         {/* Header */}
         <div className="pt-14 pb-4">
-          <p className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-1">Analytics</p>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: 'rgba(45,212,191,0.5)' }}>Analytics</p>
           <h1 className="text-white text-2xl font-bold mb-4">Insights</h1>
           <InsightsPeriodToggle period={period} />
         </div>
@@ -146,7 +142,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
           </div>
           <div className="rounded-2xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Streak</p>
-            <p className="text-sm font-bold text-orange-400 tabular-nums">{streak}d 🔥</p>
+            <p className="text-sm font-bold tabular-nums" style={{ color: '#2dd4bf' }}>{streak}d 🔥</p>
             <p className="text-[10px] mt-0.5 text-white/25">consecutive</p>
           </div>
         </div>
@@ -168,7 +164,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
                   background: (savingsRate ?? 0) >= 20
                     ? 'linear-gradient(90deg,#10b981,#34d399)'
                     : (savingsRate ?? 0) >= 0
-                    ? 'linear-gradient(90deg,#ff6b35,#ff9f00)'
+                    ? 'linear-gradient(90deg,#0d9488,#2dd4bf)'
                     : 'linear-gradient(90deg,#ef4444,#f87171)',
                 }}
               />

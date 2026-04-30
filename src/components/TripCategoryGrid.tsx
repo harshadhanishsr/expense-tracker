@@ -28,7 +28,7 @@ export default function TripCategoryGrid({ transactions }: Props) {
             <div className="text-lg font-black text-white mt-0.5">₹{total.toLocaleString()}</div>
             <div className="text-[10px] text-slate-600 mt-0.5">{count} expense{count !== 1 ? 's' : ''}</div>
             <div className="mt-2 h-0.5 rounded-full bg-white/[0.08]">
-              <div className="h-0.5 rounded-full bg-gradient-to-r from-[#ff6b35] to-[#ff9f00]"
+              <div className="h-0.5 rounded-full bg-gradient-to-r from-[#6366f1] to-[#a78bfa]"
                 style={{ width: `${barPct}%` }} />
             </div>
           </div>

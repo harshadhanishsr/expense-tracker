@@ -148,7 +148,7 @@ export default function AIInputBar() {
   const chips = getSmartChips(chipTxns)
 
   return (
-    <div className="fixed bottom-[72px] left-0 right-0 z-40 px-4">
+    <div className="fixed left-0 right-0 z-40 px-4" style={{ bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       {toast && (
         <div className="mb-2 text-center text-xs text-emerald-400 font-semibold">{toast}</div>
       )}
@@ -192,7 +192,7 @@ export default function AIInputBar() {
             <button
               key={i}
               onClick={() => chipTap(c)}
-              className="flex-shrink-0 px-2.5 py-1 rounded-2xl text-[11px] border bg-orange-500/10 border-orange-500/20 text-orange-400 whitespace-nowrap"
+              className="flex-shrink-0 px-2.5 py-1 rounded-2xl text-[11px] border bg-indigo-500/10 border-indigo-500/20 text-indigo-400 whitespace-nowrap"
             >
               {getCategoryById(c.category)?.emoji} {c.description}
             </button>
@@ -201,7 +201,7 @@ export default function AIInputBar() {
       )}
 
       {/* Main bar */}
-      <div className="flex items-center gap-2 bg-[#16161f] border border-orange-500/30 rounded-3xl px-4 py-2.5 shadow-xl shadow-black/50">
+      <div className={`glass-accent flex items-center gap-2 rounded-3xl px-4 py-3 shadow-2xl shadow-black/70 transition-all duration-300 ${!parsed && !loading ? 'ai-bar-idle' : ''}`}>
         <VoiceInput
           onTranscript={t => { setInput(t); lastInputRef.current = t }}
           onError={msg => showToast(msg)}
@@ -212,11 +212,12 @@ export default function AIInputBar() {
           value={input}
           onChange={e => { setInput(e.target.value); lastInputRef.current = e.target.value }}
           onKeyDown={e => { if (e.key === 'Enter') submit() }}
-          placeholder="Type or speak an expense…"
-          className="flex-1 bg-transparent text-sm text-slate-200 placeholder-slate-600 outline-none"
+          placeholder="e.g. coffee 80, salary 50000…"
+          className="flex-1 bg-transparent text-slate-200 placeholder-slate-500 outline-none"
+          style={{ fontSize: 16 }}
         />
         {loading && (
-          <span className="w-8 h-8 flex items-center justify-center text-orange-400 text-base select-none animate-spin">
+          <span className="w-8 h-8 flex items-center justify-center text-indigo-400 text-base select-none animate-spin">
             ↻
           </span>
         )}
@@ -224,7 +225,7 @@ export default function AIInputBar() {
           <button
             onClick={() => submit()}
             disabled={submitting}
-            className="w-8 h-8 rounded-full bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-sm text-orange-400"
+            className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-sm text-indigo-400"
           >
             ➤
           </button>

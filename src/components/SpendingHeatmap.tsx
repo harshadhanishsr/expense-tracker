@@ -27,12 +27,12 @@ export default function SpendingHeatmap({ transactions }: Props) {
   const avg = nonZero.length > 0 ? nonZero.reduce((s, a) => s + a, 0) / nonZero.length : 0
 
   function cellColor(amount: number): string {
-    if (amount === 0) return 'rgba(255,255,255,0.05)'
-    if (avg === 0) return 'rgba(255,107,53,0.2)'
-    if (amount < avg * 0.8) return 'rgba(255,107,53,0.2)'
-    if (amount < avg * 1.2) return 'rgba(255,107,53,0.45)'
-    if (amount < avg * 1.5) return 'rgba(255,107,53,0.7)'
-    return 'rgba(255,107,53,0.95)'
+    if (amount === 0) return 'rgba(255,255,255,0.04)'
+    if (avg === 0) return 'rgba(99,102,241,0.25)'
+    if (amount < avg * 0.8) return 'rgba(99,102,241,0.25)'
+    if (amount < avg * 1.2) return 'rgba(99,102,241,0.50)'
+    if (amount < avg * 1.5) return 'rgba(139,92,246,0.70)'
+    return 'rgba(167,139,250,0.90)'
   }
 
   return (
@@ -50,7 +50,7 @@ export default function SpendingHeatmap({ transactions }: Props) {
                 background: cellColor(amt),
                 borderRadius: 5,
                 height: 18,
-                boxShadow: isToday ? '0 0 0 2px #ff6b35' : undefined,
+                boxShadow: isToday ? '0 0 0 2px #818cf8' : undefined,
               }}
             />
           )

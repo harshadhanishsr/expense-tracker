@@ -47,14 +47,14 @@ export default function BentoCategoryGrid({ transactions, prevMonthTransactions 
               ₹{amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
             </div>
             {prevAmt > 0 && (
-              <div className={`text-[10px] mt-0.5 font-medium ${delta > 0 ? 'text-orange-400' : 'text-emerald-400'}`}>
+              <div className={`text-[10px] mt-0.5 font-medium ${delta > 0 ? 'text-indigo-400' : 'text-emerald-400'}`}>
                 {delta > 0 ? '+' : ''}₹{Math.abs(delta).toLocaleString('en-IN', { maximumFractionDigits: 0 })} vs last month
               </div>
             )}
             <div className="h-[3px] rounded-full mt-2" style={{ background: 'rgba(255,255,255,0.08)' }}>
               <div
                 className="h-[3px] rounded-full"
-                style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#ff6b35,#ff9f00)' }}
+                style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#6366f1,#a78bfa)' }}
               />
             </div>
           </div>
