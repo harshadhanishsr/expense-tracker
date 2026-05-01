@@ -3,7 +3,6 @@ export const dynamic = 'force-dynamic'
 
 import { getSupabaseAdmin } from '@/lib/supabase'
 import DayGroup from '@/components/DayGroup'
-import BottomNav from '@/components/BottomNav'
 import type { Transaction } from '@/lib/types'
 
 function dayLabel(dateStr: string): string {
@@ -34,11 +33,11 @@ export default async function DailyPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 pb-28">
-      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 px-4 pt-14 pb-6 overflow-hidden">
+    <main className="min-h-screen" style={{ background: '#020d0a', paddingBottom: 'calc(180px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="relative bg-gradient-to-br from-teal-700 via-teal-800 to-emerald-900 px-4 pt-14 pb-6 overflow-hidden">
         <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5 blur-xl" />
         <div className="max-w-lg mx-auto relative">
-          <p className="text-blue-200 text-xs font-semibold uppercase tracking-widest mb-1">Daily Breakdown</p>
+          <p className="text-teal-200 text-xs font-semibold uppercase tracking-widest mb-1">Daily Breakdown</p>
           <h1 className="text-white text-2xl font-bold">Last 30 Days</h1>
         </div>
       </div>
@@ -53,7 +52,6 @@ export default async function DailyPage() {
           <DayGroup key={date} label={dayLabel(date)} transactions={txs} />
         ))}
       </div>
-      <BottomNav />
     </main>
   )
 }

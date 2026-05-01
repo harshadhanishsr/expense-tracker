@@ -38,12 +38,12 @@ export default function TripDetailPage() {
   }, [id])
 
   if (loading) return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-slate-500">
+    <div className="min-h-screen bg-[#020d0a] flex items-center justify-center text-slate-500">
       Loading…
     </div>
   )
   if (!trip) return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-slate-500">
+    <div className="min-h-screen bg-[#020d0a] flex items-center justify-center text-slate-500">
       Trip not found
     </div>
   )
@@ -53,7 +53,7 @@ export default function TripDetailPage() {
   const perDay = trip.days_elapsed > 0 ? Math.round(trip.total_spent / trip.days_elapsed) : 0
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] pb-40">
+    <div className="min-h-screen bg-[#020d0a] pb-40">
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="px-4 pt-14 pb-4">

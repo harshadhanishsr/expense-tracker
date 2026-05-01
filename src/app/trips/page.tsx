@@ -56,7 +56,7 @@ export default function TripsPage() {
   const pastTrips = trips.filter(t => t.end_date < today && t.id !== activeTrip?.id)
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] pb-40">
+    <div className="min-h-screen bg-[#020d0a] pb-40">
       <div className="max-w-lg mx-auto px-4 pt-14">
         <div className="flex items-center justify-between mb-5">
           <h1 className="text-2xl font-black text-white">My Trips ✈️</h1>

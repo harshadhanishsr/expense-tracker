@@ -5,7 +5,6 @@ import { getSupabaseAdmin } from '@/lib/supabase'
 import BarChart from '@/components/BarChart'
 import InsightsPeriodToggle from '@/components/InsightsPeriodToggle'
 import CategoryBars from '@/components/CategoryBars'
-import BottomNav from '@/components/BottomNav'
 import { getCategoryById } from '@/lib/categories'
 import type { Transaction } from '@/lib/types'
 
@@ -227,8 +226,6 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
           <CategoryBars transactions={currentTxs} />
         </div>
       </div>
-
-      <BottomNav />
     </main>
   )
 }
