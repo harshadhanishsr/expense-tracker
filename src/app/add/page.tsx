@@ -2,13 +2,12 @@
 export const dynamic = 'force-dynamic'
 
 import TransactionForm from '@/components/TransactionForm'
-import BottomNav from '@/components/BottomNav'
 import Link from 'next/link'
 
 export default function AddPage() {
   return (
-    <main className="min-h-screen bg-slate-950 pb-28">
-      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 px-4 pt-14 pb-6 overflow-hidden">
+    <main className="min-h-screen" style={{ background: '#020d0a', paddingBottom: 'calc(180px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="relative bg-gradient-to-br from-teal-700 via-teal-800 to-emerald-900 px-4 pt-14 pb-6 overflow-hidden">
         <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5 blur-xl" />
         <div className="max-w-lg mx-auto relative flex items-center gap-3">
           <Link href="/dashboard"
@@ -16,7 +15,7 @@ export default function AddPage() {
             ‹
           </Link>
           <div>
-            <p className="text-blue-200 text-xs font-semibold uppercase tracking-widest">New Entry</p>
+            <p className="text-teal-200 text-xs font-semibold uppercase tracking-widest">New Entry</p>
             <h1 className="text-white text-xl font-bold">Add Transaction</h1>
           </div>
         </div>
@@ -24,7 +23,6 @@ export default function AddPage() {
       <div className="max-w-lg mx-auto px-4 pt-5">
         <TransactionForm />
       </div>
-      <BottomNav />
     </main>
   )
 }
