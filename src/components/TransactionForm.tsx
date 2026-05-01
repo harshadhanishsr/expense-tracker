@@ -65,9 +65,9 @@ export default function TransactionForm() {
 
       {/* Repeat banner */}
       {isRepeat && (
-        <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-2xl px-4 py-3">
-          <span className="text-blue-400 text-lg">↺</span>
-          <p className="text-blue-300 text-sm font-medium">Repeating a past transaction — edit if needed</p>
+        <div className="flex items-center gap-2 bg-teal-500/10 border border-teal-500/20 rounded-2xl px-4 py-3">
+          <span className="text-teal-400 text-lg">↺</span>
+          <p className="text-teal-300 text-sm font-medium">Repeating a past transaction — edit if needed</p>
         </div>
       )}
 
@@ -146,7 +146,7 @@ export default function TransactionForm() {
           </div>
           <button type="button" onClick={() => setIsRecurring(r => !r)}
             className={`w-12 h-6 rounded-full transition-all duration-300 relative flex-shrink-0
-              ${isRecurring ? 'bg-gradient-to-r from-blue-500 to-indigo-500 shadow-lg shadow-blue-500/30' : 'bg-slate-700'}`}>
+              ${isRecurring ? 'bg-gradient-to-r from-teal-500 to-emerald-500 shadow-lg shadow-teal-500/30' : 'bg-slate-700'}`}>
             <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${isRecurring ? 'translate-x-6' : 'translate-x-0.5'}`} />
           </button>
         </div>
@@ -156,7 +156,7 @@ export default function TransactionForm() {
               <button key={interval} type="button" onClick={() => setRecurrenceInterval(interval)}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-semibold capitalize transition-all active:scale-95
                   ${recurrenceInterval===interval
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20'
+                    ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/20'
                     : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
               >{interval}</button>
             ))}
