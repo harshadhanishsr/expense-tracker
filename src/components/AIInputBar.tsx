@@ -39,10 +39,12 @@ export default function AIInputBar() {
   const [chipTxns, setChipTxns] = useState<Array<{ description?: string | null; category: string; amount: number; date: string }>>([])
   const [toast, setToast] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [autoCountdown, setAutoCountdown] = useState(false)
   const { activeTrip, pendingPrefill, setPendingPrefill } = useTripContext()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const lastInputRef = useRef('')
+  const autoSubmitRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Fetch recent transactions for smart chips
   useEffect(() => {
@@ -144,6 +146,35 @@ export default function AIInputBar() {
       type: 'expense',
       confidence: 'high',
     })
+  }
+
+  // Auto-submit after 1.5s of idle when parse is high-confidence
+  useEffect(() => {
+    if (autoSubmitRef.current) {
+      clearTimeout(autoSubmitRef.current)
+      autoSubmitRef.current = null
+    }
+    setAutoCountdown(false)
+    if (!parsed || parsed.confidence !== 'high' || parsed.amount <= 0 || submitting) return
+    setAutoCountdown(true)
+    const id = setTimeout(() => {
+      setAutoCountdown(false)
+      autoSubmitRef.current = null
+      void submitTransaction(parsed)
+    }, 1500)
+    autoSubmitRef.current = id
+    return () => {
+      clearTimeout(id)
+      if (autoSubmitRef.current === id) autoSubmitRef.current = null
+    }
+  }, [parsed, submitting, input])
+
+  function cancelAutoSubmit() {
+    if (autoSubmitRef.current) {
+      clearTimeout(autoSubmitRef.current)
+      autoSubmitRef.current = null
+    }
+    setAutoCountdown(false)
   }
 
   const catForType = getCategoriesForType(parsed?.type ?? 'expense')
