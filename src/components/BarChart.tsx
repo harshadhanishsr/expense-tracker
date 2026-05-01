@@ -19,7 +19,7 @@ export default function BarChart({ bars, maxValue }: { bars: Bar[]; maxValue: nu
                 style={{ height: `${Math.round((bar.previous / max) * 100)}%`, minHeight: '4px' }} />
             )}
             {bar.current > 0 && (
-              <div className="flex-1 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-lg transition-all duration-500 shadow-lg shadow-blue-500/20"
+              <div className="flex-1 bg-gradient-to-t from-teal-700 to-emerald-400 rounded-t-lg transition-all duration-500 shadow-lg shadow-teal-500/20"
                 style={{ height: `${Math.round((bar.current / max) * 100)}%`, minHeight: '4px' }} />
             )}
             {bar.previous === 0 && bar.current === 0 && (
