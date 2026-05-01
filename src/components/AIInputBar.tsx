@@ -1,6 +1,7 @@
 // src/components/AIInputBar.tsx
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import { parse } from '@/lib/smartParser'
 import { useTripContext } from '@/lib/tripContext'
 import { saveExample, getTopExamples } from '@/lib/trainingStore'
@@ -31,6 +32,7 @@ function getSmartChips(
 }
 
 export default function AIInputBar() {
+  const pathname = usePathname()
   const [input, setInput] = useState('')
   const [parsed, setParsed] = useState<ParseResult | null>(null)
   const [loading, setLoading] = useState(false)
@@ -146,6 +148,9 @@ export default function AIInputBar() {
 
   const catForType = getCategoriesForType(parsed?.type ?? 'expense')
   const chips = getSmartChips(chipTxns)
+
+  // Hide on routes that have their own input (form pages)
+  if (pathname?.startsWith('/add')) return null
 
   return (
     <div className="fixed left-0 right-0 z-40 px-4" style={{ bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
